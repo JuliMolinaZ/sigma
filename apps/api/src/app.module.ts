@@ -1,0 +1,68 @@
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { BullModule } from '@nestjs/bullmq';
+import configuration from './config/configuration';
+import { validationSchema } from './config/validation';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { PrismaService } from './database/prisma.service';
+import { AuthModule } from './modules/auth/auth.module';
+import { HealthModule } from './modules/health/health.module';
+import { UsersModule } from './modules/users/users.module';
+import { RolesModule } from './modules/roles/roles.module';
+import { ProjectsModule } from './modules/projects/projects.module';
+import { TasksModule } from './modules/tasks/tasks.module';
+import { SprintsModule } from './modules/sprints/sprints.module';
+import { FinanceModule } from './modules/finance/finance.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { CoreModule } from './modules/core/core.module';
+import { ClientsModule } from './modules/clients/clients.module';
+import { SuppliersModule } from './modules/suppliers/suppliers.module';
+import { OrganizationModulesModule } from './modules/organization-modules/organization-modules.module';
+import { TenantMiddleware } from './common/middleware/tenant.middleware';
+
+@Module({
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+            validationSchema,
+            load: [configuration],
+        }),
+        ThrottlerModule.forRoot([{
+            ttl: 60000,
+            limit: 10,
+        }]),
+        BullModule.forRoot({
+            connection: {
+                host: process.env.REDIS_HOST || 'localhost',
+                port: parseInt(process.env.REDIS_PORT || '6379'),
+                password: process.env.REDIS_PASSWORD,
+            },
+        }),
+        AuthModule,
+        HealthModule,
+        UsersModule,
+        RolesModule,
+        ProjectsModule,
+        TasksModule,
+        SprintsModule,
+        FinanceModule,
+        AnalyticsModule,
+        NotificationsModule,
+        CoreModule,
+        ClientsModule,
+        SuppliersModule,
+        OrganizationModulesModule,
+    ],
+    controllers: [AppController],
+    providers: [AppService, PrismaService],
+})
+export class AppModule implements NestModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer
+            .apply(TenantMiddleware)
+            .forRoutes('*');
+    }
+}

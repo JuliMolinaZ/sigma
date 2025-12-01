@@ -1,0 +1,12 @@
+{
+    "name": "@sigma/config",
+    "version": "0.0.0",
+    "private": true,
+    "main": "index.js",
+    "license": "MIT",
+    "devDependencies": {
+        "typescript": "^5.0.0",
+        "eslint": "^8.0.0",
+        "eslint-config-prettier": "^8.0.0"
+    }
+}

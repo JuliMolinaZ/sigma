@@ -1,0 +1,144 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Link, usePathname } from '@/i18n/routing'
+import { cn } from '@/lib/utils'
+import { MODULES, APP_NAME } from '@/lib/constants'
+import { ChevronDown, ChevronRight, Menu } from 'lucide-react'
+import { useAuthStore } from '@/store/auth.store'
+import { useTranslations } from 'next-intl'
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet"
+import { Button } from "@/components/ui/button"
+import Image from 'next/image'
+
+export default function MobileSidebar() {
+    const pathname = usePathname()
+    const { user } = useAuthStore()
+    const [expandedSections, setExpandedSections] = useState<string[]>(['core', 'finance', 'admin', 'tools'])
+    const [open, setOpen] = useState(false)
+    const t = useTranslations('navigation')
+
+    const toggleSection = (section: string) => {
+        setExpandedSections(prev =>
+            prev.includes(section)
+                ? prev.filter(s => s !== section)
+                : [...prev, section]
+        )
+    }
+
+    const canAccessModule = (module: typeof MODULES[0]) => {
+        if (!module.requiredRole) return true
+        if (!user) return false
+        const userRole = typeof user.role === 'object' ? (user.role as any).name : user.role
+        return module.requiredRole.includes(userRole)
+    }
+
+    const modulesByCategory = {
+        core: MODULES.filter(m => m.category === 'core' && canAccessModule(m)),
+        finance: MODULES.filter(m => m.category === 'finance' && canAccessModule(m)),
+        admin: MODULES.filter(m => m.category === 'admin' && canAccessModule(m)),
+        tools: MODULES.filter(m => m.category === 'tools' && canAccessModule(m)),
+    }
+
+    return (
+        <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="lg:hidden">
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Toggle menu</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0 bg-gray-900 border-r border-gray-800 text-gray-100">
+                <SheetHeader className="p-4 border-b border-gray-800 text-left">
+                    <SheetTitle className="flex items-center gap-3 text-white">
+                        <div className="relative w-10 h-10 rounded-lg bg-white/95 backdrop-blur-sm p-1.5">
+                            <Image
+                                src="/sigma-black.jpeg"
+                                alt="SIGMA"
+                                fill
+                                className="object-contain"
+                                priority
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-bold text-xl">{APP_NAME}</span>
+                            <span className="text-xs text-gray-400">v3.0.1</span>
+                        </div>
+                    </SheetTitle>
+                </SheetHeader>
+
+                <nav className="flex-1 overflow-y-auto p-3 space-y-1 h-[calc(100vh-8rem)]">
+                    {Object.entries(modulesByCategory).map(([category, modules]) => {
+                        if (modules.length === 0) return null
+                        const isExpanded = expandedSections.includes(category)
+
+                        return (
+                            <div key={category} className="space-y-1">
+                                <button
+                                    onClick={() => toggleSection(category)}
+                                    className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-300 transition-colors"
+                                >
+                                    <span>{t(`categories.${category}`)}</span>
+                                    {isExpanded ? (
+                                        <ChevronDown className="w-4 h-4" />
+                                    ) : (
+                                        <ChevronRight className="w-4 h-4" />
+                                    )}
+                                </button>
+
+                                {isExpanded && modules.map((module) => {
+                                    const Icon = module.icon
+                                    const isActive = pathname === module.path || pathname.startsWith(module.path + '/')
+
+                                    return (
+                                        <Link
+                                            key={module.id}
+                                            href={module.path}
+                                            onClick={() => setOpen(false)}
+                                            className={cn(
+                                                'flex items-center gap-3 px-3 py-2 rounded-lg transition-all group',
+                                                isActive
+                                                    ? 'bg-blue-600 text-white'
+                                                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                                            )}
+                                        >
+                                            <Icon className="w-5 h-5 flex-shrink-0" />
+                                            <span className="text-sm font-medium truncate">{t(module.id)}</span>
+                                            {isActive && (
+                                                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white" />
+                                            )}
+                                        </Link>
+                                    )
+                                })}
+                            </div>
+                        )
+                    })}
+                </nav>
+
+                {user && (
+                    <div className="absolute bottom-0 left-0 right-0 border-t border-gray-800 p-4 bg-gray-900">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                                {user.firstName?.[0]}{user.lastName?.[0]}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-white truncate">
+                                    {user.firstName} {user.lastName}
+                                </p>
+                                <p className="text-xs text-gray-400 truncate">
+                                    {typeof user.role === 'object' ? (user.role as any).name : user.role}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </SheetContent>
+        </Sheet>
+    )
+}

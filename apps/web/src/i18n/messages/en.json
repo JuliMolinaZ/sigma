@@ -1,0 +1,390 @@
+{
+    "common": {
+        "actions": {
+            "save": "Save",
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "edit": "Edit",
+            "create": "Create",
+            "update": "Update",
+            "search": "Search",
+            "filter": "Filter",
+            "export": "Export",
+            "import": "Import",
+            "close": "Close",
+            "back": "Back",
+            "next": "Next",
+            "previous": "Previous",
+            "submit": "Submit",
+            "confirm": "Confirm",
+            "viewAll": "View All",
+            "loadMore": "Load More",
+            "refresh": "Refresh"
+        },
+        "status": {
+            "active": "Active",
+            "inactive": "Inactive",
+            "pending": "Pending",
+            "approved": "Approved",
+            "rejected": "Rejected",
+            "completed": "Completed",
+            "inProgress": "In Progress",
+            "todo": "To Do",
+            "done": "Done",
+            "cancelled": "Cancelled"
+        },
+        "labels": {
+            "name": "Name",
+            "email": "Email",
+            "password": "Password",
+            "description": "Description",
+            "date": "Date",
+            "time": "Time",
+            "status": "Status",
+            "type": "Type",
+            "category": "Category",
+            "priority": "Priority",
+            "assignee": "Assignee",
+            "owner": "Owner",
+            "createdAt": "Created At",
+            "updatedAt": "Updated At",
+            "actions": "Actions"
+        },
+        "messages": {
+            "loading": "Loading...",
+            "noData": "No data available",
+            "error": "An error occurred",
+            "success": "Operation successful",
+            "confirmDelete": "Are you sure you want to delete this item?",
+            "unsavedChanges": "You have unsaved changes",
+            "required": "This field is required"
+        }
+    },
+    "auth": {
+        "login": {
+            "title": "Sign In",
+            "welcome": "Welcome",
+            "subtitle": "Welcome back to SIGMA",
+            "instruction": "Enter your credentials to continue",
+            "emailPlaceholder": "Enter your email",
+            "passwordPlaceholder": "Enter your password",
+            "rememberMe": "Remember me",
+            "forgotPassword": "Forgot password?",
+            "signIn": "Sign In",
+            "loggingIn": "Signing in...",
+            "noAccount": "Don't have an account?",
+            "newToSigma": "New to SIGMA?",
+            "createAccount": "Create an account",
+            "signUp": "Sign up",
+            "terms": "By signing in, you agree to our",
+            "termsLink": "Terms of Service",
+            "privacyLink": "Privacy Policy",
+            "and": "and",
+            "hero": {
+                "title": "Enterprise Resource Planning",
+                "subtitle": "Power your business with the most advanced and complete ERP platform on the market",
+                "features": {
+                    "security": {
+                        "title": "Enterprise Security",
+                        "desc": "Bank-grade encryption"
+                    },
+                    "performance": {
+                        "title": "High Performance",
+                        "desc": "Optimized for scale"
+                    },
+                    "multitenancy": {
+                        "title": "Multi-tenancy",
+                        "desc": "Organizational management"
+                    }
+                },
+                "footer": "© 2025 SIGMA Enterprise. All rights reserved."
+            },
+            "errors": {
+                "invalidCredentials": "Invalid email or password",
+                "accountLocked": "Your account has been locked",
+                "emailRequired": "Email is required",
+                "passwordRequired": "Password is required"
+            }
+        },
+        "register": {
+            "title": "Create Account",
+            "subtitle": "Get started with SIGMA",
+            "firstNamePlaceholder": "First name",
+            "lastNamePlaceholder": "Last name",
+            "emailPlaceholder": "Email address",
+            "passwordPlaceholder": "Password",
+            "confirmPasswordPlaceholder": "Confirm password",
+            "organizationPlaceholder": "Organization name",
+            "signUp": "Sign Up",
+            "haveAccount": "Already have an account?",
+            "signIn": "Sign in",
+            "errors": {
+                "emailExists": "Email already exists",
+                "passwordMismatch": "Passwords do not match",
+                "weakPassword": "Password is too weak"
+            }
+        }
+    },
+    "navigation": {
+        "dashboard": "Dashboard",
+        "projects": "Projects",
+        "tasks": "Tasks",
+        "sprints": "Sprints",
+        "time-tracking": "Time Tracking",
+        "expenses": "Expenses",
+        "clients": "Clients",
+        "suppliers": "Suppliers",
+        "finance-dashboard": "Finance Dashboard",
+        "finance-accounts": "Chart of Accounts",
+        "finance-journal": "Journal Entries",
+        "finance-ar": "Accounts Receivable",
+        "finance-ap": "Accounts Payable",
+        "finance-fixed-costs": "Fixed Costs",
+        "finance-invoices": "Invoices",
+        "finance-purchase-orders": "Purchase Orders",
+        "finance-flow-recoveries": "Flow Recovery",
+        "finance-reports": "Financial Reports",
+        "users": "Users",
+        "roles": "Roles & Permissions",
+        "organization": "Organization",
+        "audit": "Audit Logs",
+        "analytics": "Analytics",
+        "notifications": "Notifications",
+        "calendar": "Calendar",
+        "settings": "Settings",
+        "profile": "Profile",
+        "signOut": "Sign Out",
+        "searchPlaceholder": "Search projects, tasks, users...",
+        "categories": {
+            "core": "Core Modules",
+            "finance": "Finance",
+            "admin": "Administration",
+            "tools": "Tools"
+        },
+        "modules-management": "Modules Management"
+    },
+    "dashboard": {
+        "title": "Welcome back, {name}!",
+        "subtitle": "Here's what's happening with your projects today.",
+        "stats": {
+            "totalProjects": "Total Projects",
+            "activeTasks": "Active Tasks",
+            "teamMembers": "Team Members",
+            "hoursThisWeek": "Hours This Week",
+            "revenue": "Revenue",
+            "expenses": "Expenses",
+            "profit": "Profit"
+        },
+        "widgets": {
+            "activeProjects": "Active Projects",
+            "recentActivity": "Recent Activity",
+            "quickActions": "Quick Actions"
+        },
+        "actions": {
+            "newProject": "New Project",
+            "newTask": "New Task",
+            "logTime": "Log Time"
+        }
+    },
+    "projects": {
+        "title": "Projects",
+        "subtitle": "Manage and track all your projects",
+        "newProject": "New Project",
+        "searchPlaceholder": "Search projects...",
+        "filters": {
+            "title": "Filters",
+            "all": "All Projects",
+            "active": "Active",
+            "completed": "Completed",
+            "onHold": "On Hold"
+        },
+        "table": {
+            "project": "Project",
+            "client": "Client",
+            "phase": "Phase",
+            "status": "Status",
+            "dates": "Dates",
+            "amount": "Amount",
+            "owner": "Owner",
+            "tasks": "Tasks",
+            "startDate": "Start Date"
+        },
+        "empty": {
+            "title": "No projects found",
+            "description": "Create a new project to get started"
+        },
+        "loading": "Loading projects...",
+        "createDialog": {
+            "title": "Create New Project",
+            "success": "Project created successfully",
+            "error": "Failed to create project"
+        },
+        "noDescription": "No description",
+        "noClient": "No Client",
+        "noContact": "No contact"
+    },
+    "tasks": {
+        "title": "Tasks",
+        "subtitle": "Organize and track your tasks",
+        "newTask": "New Task",
+        "columns": {
+            "todo": "To Do",
+            "inProgress": "In Progress",
+            "inReview": "In Review",
+            "done": "Done"
+        },
+        "priority": {
+            "low": "Low",
+            "medium": "Medium",
+            "high": "High",
+            "urgent": "Urgent"
+        }
+    },
+    "sprints": {
+        "title": "Sprints",
+        "subtitle": "Plan and track your development sprints",
+        "create": "Create Sprint",
+        "searchPlaceholder": "Search sprints...",
+        "filters": {
+            "title": "Filters"
+        },
+        "empty": {
+            "title": "No sprints found",
+            "description": "Create your first sprint to get started"
+        },
+        "loading": "Loading sprints...",
+        "createDialog": {
+            "title": "Create Sprint",
+            "success": "Sprint created successfully",
+            "error": "Failed to create sprint"
+        }
+    },
+    "clients": {
+        "title": "Clients",
+        "subtitle": "Manage your client relationships",
+        "create": "New Client",
+        "searchPlaceholder": "Search clients...",
+        "filters": {
+            "title": "Filters"
+        },
+        "empty": {
+            "title": "No clients found",
+            "description": "Add a new client to get started"
+        },
+        "loading": "Loading clients...",
+        "createDialog": {
+            "title": "Create New Client",
+            "success": "Client created successfully",
+            "error": "Failed to create client"
+        }
+    },
+    "suppliers": {
+        "title": "Suppliers",
+        "subtitle": "Manage your supplier relationships",
+        "create": "New Supplier",
+        "searchPlaceholder": "Search suppliers...",
+        "filters": {
+            "title": "Filters"
+        },
+        "empty": {
+            "title": "No suppliers found",
+            "description": "Add a new supplier to get started"
+        },
+        "loading": "Loading suppliers...",
+        "createDialog": {
+            "title": "Create New Supplier",
+            "success": "Supplier created successfully",
+            "error": "Failed to create supplier"
+        }
+    },
+    "financeDashboard": {
+        "title": "Finance Dashboard",
+        "subtitle": "Overview of your financial performance"
+    },
+    "financeAR": {
+        "title": "Accounts Receivable",
+        "subtitle": "Manage incoming payments and invoices",
+        "create": "New Record",
+        "empty": "No accounts receivable found"
+    },
+    "financeAP": {
+        "title": "Accounts Payable",
+        "subtitle": "Manage your payment obligations",
+        "create": "New Record",
+        "empty": "No accounts payable found"
+    },
+    "financePO": {
+        "title": "Purchase Orders",
+        "subtitle": "Manage purchase orders",
+        "create": "New Purchase Order",
+        "empty": "No purchase orders found"
+    },
+    "users": {
+        "title": "Users",
+        "subtitle": "Manage system users",
+        "create": "New User",
+        "empty": "No users found"
+    },
+    "roles": {
+        "title": "Roles & Permissions",
+        "subtitle": "Manage system roles and permissions",
+        "create": "New Role",
+        "empty": "No roles found"
+    },
+    "modules": {
+        "title": "Modules Management",
+        "subtitle": "Configure available modules",
+        "empty": "No modules found"
+    },
+    "calendar": {
+        "title": "Calendar",
+        "subtitle": "View and manage your events",
+        "newEvent": "New Event",
+        "empty": "No scheduled events"
+    },
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Manage your account settings and preferences",
+        "tabs": {
+            "profile": "Profile",
+            "security": "Security",
+            "notifications": "Notifications",
+            "language": "Language",
+            "appearance": "Appearance"
+        },
+        "profile": {
+            "title": "Profile Information",
+            "firstName": "First Name",
+            "lastName": "Last Name",
+            "email": "Email",
+            "changeAvatar": "Change Avatar"
+        },
+        "security": {
+            "title": "Security Settings",
+            "currentPassword": "Current Password",
+            "newPassword": "New Password",
+            "confirmPassword": "Confirm New Password",
+            "updatePassword": "Update Password"
+        },
+        "language": {
+            "title": "Language Preferences",
+            "selectLanguage": "Select Language",
+            "english": "English",
+            "spanish": "Spanish"
+        },
+        "appearance": {
+            "title": "Appearance",
+            "theme": "Theme",
+            "light": "Light",
+            "dark": "Dark",
+            "system": "System"
+        }
+    },
+    "errors": {
+        "notFound": "Page not found",
+        "unauthorized": "Unauthorized access",
+        "serverError": "Server error occurred",
+        "networkError": "Network connection error",
+        "validationError": "Validation error"
+    }
+}

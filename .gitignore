@@ -1,0 +1,287 @@
+# ===========================================
+# SIGMA ERP - .gitignore
+# ===========================================
+# Professional repository configuration
+# Excludes all development tools, AI assistants, and sensitive data
+
+# ===========================================
+# AI Assistant Tools & Directories
+# ===========================================
+.claude/
+.cursor/
+.copilot/
+.ai/
+.anthropic/
+.openai/
+.gpt/
+*.ai
+.cursorrules
+.claudeignore
+.copilotignore
+.aiignore
+.vscode/settings.json
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/shelf/
+*.iml
+
+# ===========================================
+# Dependencies
+# ===========================================
+node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+.yarn/
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# ===========================================
+# Build outputs
+# ===========================================
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+*.js.map
+*.d.ts.map
+
+# ===========================================
+# Environment variables & Secrets
+# ===========================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.test
+.env.staging
+*.env
+**/.env
+**/.env.*
+secrets/
+credentials/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*secret*
+*SECRET*
+*password*
+*PASSWORD*
+*credential*
+*CREDENTIAL*
+*api_key*
+*API_KEY*
+*apikey*
+*APIKEY*
+*token*
+*TOKEN*
+*access_key*
+*ACCESS_KEY*
+
+# ===========================================
+# IDE & Editor files
+# ===========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# ===========================================
+# Logs
+# ===========================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+logs/
+*.log.*
+
+# ===========================================
+# Testing
+# ===========================================
+coverage/
+.nyc_output/
+.jest/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ===========================================
+# Database files
+# ===========================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+prisma/dev.db
+prisma/dev.db-journal
+prisma/migrations-runite/
+
+# ===========================================
+# Backups & Exports (Database backups)
+# ===========================================
+backups/
+*.sql
+*.sql.gz
+*.dump
+docs/*.sql
+docs/*.sql.gz
+**/*backup*.sql
+**/*backup*.sql.gz
+**/*BACKUP*.sql
+**/*BACKUP*.sql.gz
+**/*_backup_*.sql
+**/*_backup_*.sql.gz
+**/*_production_export_*.sql
+**/*_production_export_*.sql.gz
+exports/
+*.backup
+*.bak
+
+# ===========================================
+# Temporary files
+# ===========================================
+tmp/
+temp/
+*.tmp
+*.temp
+.cache/
+.parcel-cache/
+.turbo/
+.tmp/
+
+# ===========================================
+# OS files
+# ===========================================
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ===========================================
+# Docker
+# ===========================================
+.dockerignore
+docker-compose.override.yml
+
+# ===========================================
+# TypeScript
+# ===========================================
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# ===========================================
+# Package manager locks (keep pnpm-lock.yaml)
+# ===========================================
+package-lock.json
+yarn.lock
+
+# ===========================================
+# Misc
+# ===========================================
+*.pid
+*.seed
+*.pid.lock
+.npm
+.eslintcache
+.stylelintcache
+.vercel
+.netlify
+.firebase/
+.firebaserc
+.firebase-debug.log
+
+# ===========================================
+# Documentation builds
+# ===========================================
+docs/_build/
+docs/.doctrees/
+site/
+
+# ===========================================
+# Documentation files (keep only README.md)
+# ===========================================
+# Exclude all .md files except README.md
+# Note: Order matters - first ignore all, then allow README.md
+*.md
+!README.md
+
+# ===========================================
+# Local development
+# ===========================================
+.local/
+.localhost/
+.local/
+
+# ===========================================
+# CI/CD (keep GitHub Actions, exclude local)
+# ===========================================
+.circleci/
+.travis.yml
+.gitlab-ci.yml
+azure-pipelines.yml
+
+# ===========================================
+# Monitoring & Analytics (local)
+# ===========================================
+.sentryclirc
+.sentry/
+*.prof
+*.cpuprofile
+*.heapsnapshot
+
+# ===========================================
+# Security
+# ===========================================
+*.secret
+*.private
+.secrets/
+.private/
+*.gpg
+*.asc
+
+# ===========================================
+# MacOS
+# ===========================================
+.AppleDouble
+.LSOverride
+Icon
+._.DS_Store
+
+# ===========================================
+# Windows
+# ===========================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ===========================================
+# Linux
+# ===========================================
+*~
+.fuse_hidden*
+.directory
+.Trash-*
