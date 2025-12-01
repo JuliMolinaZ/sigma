@@ -137,6 +137,7 @@ prisma/migrations-runite/
 # ===========================================
 # Backups & Exports (Database backups)
 # ===========================================
+# Exclude all backup files and directories
 backups/
 *.sql
 *.sql.gz
@@ -154,6 +155,13 @@ docs/*.sql.gz
 exports/
 *.backup
 *.bak
+# Exclude any file with "backup" in the name (except scripts)
+**/*backup*
+**/*BACKUP*
+# But allow backup scripts (they are part of the codebase)
+!scripts/*backup*.sh
+!scripts/*backup*.ts
+!apps/api/scripts/*backup*.ts
 
 # ===========================================
 # Temporary files
