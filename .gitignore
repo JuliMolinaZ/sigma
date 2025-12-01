@@ -237,6 +237,26 @@ site/
 !README.md
 
 # ===========================================
+# Development & Debugging Scripts
+# ===========================================
+# Exclude temporary development scripts from root
+**/check-*.ts
+**/fix-*.ts
+**/create-test-*.ts
+**/describe-*.ts
+**/list-*.ts
+**/update-*.ts
+**/debug*.ts
+**/debug_*.ts
+**/*-test-user.ts
+**/*-mysql-*.ts
+# But allow scripts in dedicated scripts/ directories
+!**/scripts/check-*.ts
+!**/scripts/fix-*.ts
+!**/scripts/debug*.ts
+!**/scripts/*.ts
+
+# ===========================================
 # Local development
 # ===========================================
 .local/
