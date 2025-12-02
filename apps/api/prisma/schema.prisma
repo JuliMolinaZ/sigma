@@ -19,6 +19,7 @@ model Organization {
   accountsReceivable AccountReceivable[]
   categories         Category[]
   clients            Client[]
+  dispatches         Dispatch[]
   fixedCosts         FixedCost[]
   flowRecoveries     FlowRecovery[]
   invoices           Invoice[]
@@ -65,6 +66,8 @@ model User {
   assignedTasks            Task[]               @relation("TaskAssignee")
   reportedTasks            Task[]               @relation("TaskReporter")
   timeEntries              TimeEntry[]
+  dispatchesSent           Dispatch[]           @relation("DispatchSender")
+  dispatchesReceived       Dispatch[]           @relation("DispatchRecipient")
   organization             Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   role                     Role                 @relation(fields: [roleId], references: [id])
   memberOfProjects         Project[]            @relation("ProjectMembers")
@@ -230,30 +233,32 @@ model Sprint {
 }
 
 model Task {
-  id             String       @id @default(uuid())
-  title          String
-  description    String?
-  status         TaskStatus   @default(TODO)
-  priority       TaskPriority @default(MEDIUM)
-  projectId      String       @map("project_id")
-  sprintId       String?      @map("sprint_id")
-  assigneeId     String?      @map("assignee_id")
-  reporterId     String       @map("reporter_id")
-  position       Int          @default(0)
-  dueDate        DateTime?    @map("due_date")
-  estimatedHours Float?       @map("estimated_hours")
-  actualHours    Float?       @map("actual_hours")
-  organizationId String       @map("organization_id")
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-  driveLink      String?      @map("drive_link")
-  attachments    Attachment[]
-  comments       Comment[]
-  assignee       User?        @relation("TaskAssignee", fields: [assigneeId], references: [id])
-  project        Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  reporter       User         @relation("TaskReporter", fields: [reporterId], references: [id])
-  sprint         Sprint?      @relation(fields: [sprintId], references: [id])
-  timeEntries    TimeEntry[]
+  id               String       @id @default(uuid())
+  title            String
+  description      String?
+  status           TaskStatus   @default(TODO)
+  priority         TaskPriority @default(MEDIUM)
+  projectId        String       @map("project_id")
+  sprintId         String?      @map("sprint_id")
+  assigneeId       String?      @map("assignee_id")
+  reporterId       String       @map("reporter_id")
+  position         Int          @default(0)
+  dueDate          DateTime?    @map("due_date")
+  estimatedHours   Float?       @map("estimated_hours")
+  actualHours      Float?       @map("actual_hours")
+  organizationId   String       @map("organization_id")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+  driveLink        String?      @map("drive_link")
+  sourceDispatchId String?      @unique @map("source_dispatch_id")
+  attachments      Attachment[]
+  comments         Comment[]
+  assignee         User?        @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  project          Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reporter         User         @relation("TaskReporter", fields: [reporterId], references: [id])
+  sourceDispatch   Dispatch?
+  sprint           Sprint?      @relation(fields: [sprintId], references: [id])
+  timeEntries      TimeEntry[]
 
   @@index([projectId])
   @@index([assigneeId])
@@ -797,6 +802,53 @@ model PurchaseOrder {
   @@map("purchase_orders")
 }
 
+model Dispatch {
+  id             String               @id @default(uuid())
+  content        String               @db.Text
+  description    String?              @db.Text
+  link           String?
+  urgencyLevel   UrgencyLevel         @default(NORMAL) @map("urgency_level")
+  status         DispatchStatus       @default(SENT)
+  senderId       String               @map("sender_id")
+  recipientId    String               @map("recipient_id")
+  taskId         String?              @unique @map("task_id")
+  dueDate        DateTime?            @map("due_date")
+  readAt         DateTime?            @map("read_at")
+  inProgressAt   DateTime?            @map("in_progress_at")
+  resolvedAt     DateTime?            @map("resolved_at")
+  resolutionNote String?              @map("resolution_note") @db.Text
+  organizationId String               @map("organization_id")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+  attachments    DispatchAttachment[]
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  recipient      User                 @relation("DispatchRecipient", fields: [recipientId], references: [id])
+  sender         User                 @relation("DispatchSender", fields: [senderId], references: [id])
+  task           Task?                @relation(fields: [taskId], references: [id])
+
+  @@index([recipientId, status])
+  @@index([senderId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([urgencyLevel])
+  @@index([createdAt])
+  @@map("dispatches")
+}
+
+model DispatchAttachment {
+  id         String   @id @default(uuid())
+  dispatchId String   @map("dispatch_id")
+  fileName   String   @map("file_name")
+  fileUrl    String   @map("file_url")
+  fileSize   Int      @map("file_size")
+  mimeType   String   @map("mime_type")
+  createdAt  DateTime @default(now()) @map("created_at")
+  dispatch   Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+
+  @@index([dispatchId])
+  @@map("dispatch_attachments")
+}
+
 model OrganizationModule {
   id             String       @id @default(uuid())
   organizationId String       @map("organization_id")
@@ -904,4 +956,18 @@ enum PurchaseOrderStatus {
   APPROVED
   REJECTED
   PAID
+}
+
+enum UrgencyLevel {
+  NORMAL
+  URGENT
+  CRITICAL
+}
+
+enum DispatchStatus {
+  SENT
+  READ
+  IN_PROGRESS
+  RESOLVED
+  CONVERTED_TO_TASK
 }

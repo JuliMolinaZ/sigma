@@ -21,6 +21,7 @@ import { CoreModule } from './modules/core/core.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { OrganizationModulesModule } from './modules/organization-modules/organization-modules.module';
+import { DispatchesModule } from './modules/dispatches/dispatches.module';
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
 
 @Module({
@@ -55,6 +56,7 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware';
         ClientsModule,
         SuppliersModule,
         OrganizationModulesModule,
+        DispatchesModule,
     ],
     controllers: [AppController],
     providers: [AppService, PrismaService],

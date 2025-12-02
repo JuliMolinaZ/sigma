@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { cn } from '@/lib/utils'
 import SigmaSidebar from '../navigation/SigmaSidebar'
 import MobileSidebar from '../navigation/MobileSidebar'
 import Navbar from '../navigation/Navbar'
@@ -62,7 +63,12 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
                 </div>
 
                 {/* Main Content */}
-                <div className="lg:ml-64 transition-all duration-300 pt-16 lg:pt-0">
+                <div 
+                    className={cn(
+                        "transition-all duration-300 pt-16 lg:pt-0",
+                        sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+                    )}
+                >
                     <Navbar />
 
                     {/* Page Content */}

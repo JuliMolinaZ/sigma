@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner'
 import { useAllModulesStatus, useBatchUpdateModules, useInitializeDefaultModules } from '@/hooks/useOrganizationModules'
 import { MODULES } from '@/lib/constants'
-import { Loader2, Save, RefreshCw } from 'lucide-react'
+import { Loader2, Save, RefreshCw, BookOpen } from 'lucide-react'
 import { useAuthStore } from '@/store/auth.store'
 import { useTranslations } from 'next-intl'
 
@@ -175,7 +175,7 @@ export default function ModulesManagementPage() {
                     <CardHeader>
                         <CardTitle className="text-yellow-800">Módulos No Inicializados</CardTitle>
                         <CardDescription className="text-yellow-700">
-                            No hay módulos configurados aún. Haz clic en "Inicializar Todos" para
+                            No hay módulos configurados aún. Haz clic en &quot;Inicializar Todos&quot; para
                             habilitar todos los módulos por defecto.
                         </CardDescription>
                     </CardHeader>
@@ -236,6 +236,78 @@ export default function ModulesManagementPage() {
                     Tienes cambios sin guardar
                 </div>
             )}
+
+            {/* Documentation Section */}
+            <Card className="mt-8 border-blue-200 bg-blue-50">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-blue-900">
+                        <BookOpen className="w-5 h-5" />
+                        Documentación de Módulos Financieros
+                    </CardTitle>
+                    <CardDescription className="text-blue-700">
+                        Documentación completa sobre la lógica y funcionamiento de los módulos de Cuentas por Pagar y Cuentas por Cobrar
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="bg-white p-4 rounded-lg border border-blue-200">
+                        <h3 className="font-semibold text-gray-900 mb-2">📚 Documentación Disponible</h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                            Documentación técnica completa que incluye:
+                        </p>
+                        <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 mb-4">
+                            <li>Estructura de datos y campos de ambos módulos</li>
+                            <li>Lógica de negocio y cálculos automáticos</li>
+                            <li>Flujos de trabajo paso a paso</li>
+                            <li>Estados y transiciones</li>
+                            <li>API y endpoints disponibles</li>
+                            <li>Relaciones con otros módulos</li>
+                            <li>Mejores prácticas y notas importantes</li>
+                        </ul>
+                        <div className="flex flex-col gap-2">
+                            <p className="text-xs text-gray-500">
+                                📄 Archivo: <code className="bg-gray-100 px-2 py-1 rounded">docs/MODULOS_CUENTAS_POR_PAGAR_COBRAR.md</code>
+                            </p>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    // Copy path to clipboard
+                                    navigator.clipboard.writeText('docs/MODULOS_CUENTAS_POR_PAGAR_COBRAR.md')
+                                    toast.success('Ruta del archivo copiada al portapapeles')
+                                }}
+                                className="border-blue-300 text-blue-700 hover:bg-blue-100 w-fit"
+                            >
+                                <BookOpen className="w-4 h-4 mr-2" />
+                                Copiar Ruta del Archivo
+                            </Button>
+                        </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div className="bg-white p-4 rounded-lg border border-green-200">
+                            <h4 className="font-semibold text-green-900 mb-2 flex items-center gap-2">
+                                💰 Cuentas por Cobrar
+                            </h4>
+                            <ul className="text-xs text-gray-600 space-y-1">
+                                <li>• Asociación obligatoria con proyectos</li>
+                                <li>• Seguimiento de pagos parciales</li>
+                                <li>• Cálculo automático de montos restantes</li>
+                                <li>• Estados: PENDING, PARTIAL, PAID, OVERDUE</li>
+                            </ul>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg border border-orange-200">
+                            <h4 className="font-semibold text-orange-900 mb-2 flex items-center gap-2">
+                                💸 Cuentas por Pagar
+                            </h4>
+                            <ul className="text-xs text-gray-600 space-y-1">
+                                <li>• Asociación con proveedores y categorías</li>
+                                <li>• Sistema de autorización de pagos</li>
+                                <li>• Gestión de documentos (facturas, comprobantes)</li>
+                                <li>• Estados: PENDING, PARTIAL, PAID, OVERDUE</li>
+                            </ul>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     )
 }

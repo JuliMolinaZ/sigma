@@ -134,6 +134,7 @@
         "expenses": "Gastos",
         "clients": "Clientes",
         "suppliers": "Proveedores",
+        "command-center": "Command Center",
         "finance-dashboard": "Panel Financiero",
         "finance-accounts": "Plan de Cuentas",
         "finance-journal": "Asientos Contables",
@@ -173,7 +174,15 @@
             "hoursThisWeek": "Horas Esta Semana",
             "revenue": "Ingresos",
             "expenses": "Gastos",
-            "profit": "Ganancia"
+            "profit": "Ganancia",
+            "activeProjects": "Proyectos Activos",
+            "myActiveProjects": "Mis Proyectos Activos",
+            "pendingTasks": "Tareas Pendientes",
+            "activeSprints": "Sprints Activos",
+            "efficiency": "Eficiencia",
+            "assignedTasks": "Mis Tareas Asignadas",
+            "completedTasks": "Tareas Completadas",
+            "hoursToday": "Horas Registradas Hoy"
         },
         "widgets": {
             "activeProjects": "Proyectos Activos",
@@ -184,6 +193,80 @@
             "newProject": "Nuevo Proyecto",
             "newTask": "Nueva Tarea",
             "logTime": "Registrar Tiempo"
+        },
+        "quickActions": {
+            "purchaseOrders": {
+                "title": "Órdenes de Compra",
+                "description": "Pendientes de aprobación",
+                "noPending": "No hay elementos pendientes"
+            },
+            "accountsPayable": {
+                "title": "Cuentas por Pagar",
+                "description": "Pagos pendientes",
+                "noPending": "No hay elementos pendientes"
+            },
+            "accountsReceivable": {
+                "title": "Cuentas por Cobrar",
+                "description": "Cobros pendientes",
+                "noPending": "No hay elementos pendientes"
+            },
+            "pendingTasks": {
+                "title": "Tareas Pendientes",
+                "description": "Por realizar o aprobar",
+                "noPending": "No hay elementos pendientes"
+            },
+            "commandCenter": {
+                "title": "Command Center",
+                "description": "Dispatches pendientes",
+                "noPending": "No hay elementos pendientes"
+            },
+            "viewAll": "Ver todos",
+            "noPending": "No hay elementos pendientes"
+        },
+        "charts": {
+            "revenueOverview": {
+                "title": "Resumen de Ingresos",
+                "subtitle": "Últimos {count} meses de actividad financiera",
+                "trend": "vs mes anterior",
+                "emptyState": {
+                    "title": "No hay actividad reciente",
+                    "description": "Las acciones aparecerán aquí"
+                }
+            },
+            "recentActivity": {
+                "title": "Actividad Reciente",
+                "subtitle": "Últimas acciones en el sistema",
+                "emptyState": {
+                    "title": "No hay actividad reciente",
+                    "description": "Las acciones aparecerán aquí"
+                }
+            }
+        },
+        "lists": {
+            "topClients": {
+                "title": "Top Clientes",
+                "subtitle": "Clientes con mayor actividad",
+                "invoices": "facturas",
+                "invoice": "factura",
+                "emptyState": {
+                    "title": "No hay datos de clientes",
+                    "description": "Los clientes con mayor actividad aparecerán aquí"
+                }
+            },
+            "activeSuppliers": {
+                "title": "Proveedores Activos",
+                "subtitle": "Proveedores con mayor volumen",
+                "accounts": "cuentas",
+                "account": "cuenta",
+                "emptyState": {
+                    "title": "No hay datos de proveedores",
+                    "description": "Los proveedores con mayor volumen aparecerán aquí"
+                }
+            }
+        },
+        "messages": {
+            "noAccess": "No tienes permisos para ver el panel de control global o hubo un error al cargar los datos.",
+            "useMenu": "Utiliza el menú lateral para acceder a tus módulos asignados."
         }
     },
     "projects": {
@@ -334,7 +417,11 @@
     "modules": {
         "title": "Gestión de Módulos",
         "subtitle": "Configure los módulos disponibles",
-        "empty": "No se encontraron módulos"
+        "empty": "No se encontraron módulos",
+        "updateSuccess": "Módulos actualizados correctamente",
+        "updateError": "Error al actualizar módulos",
+        "initializeSuccess": "Módulos inicializados correctamente",
+        "initializeError": "Error al inicializar módulos"
     },
     "calendar": {
         "title": "Calendario",
@@ -416,6 +503,67 @@
             "description": "Gestione las facturas",
             "create": "Nueva Factura",
             "empty": "No se encontraron facturas"
+        }
+    },
+    "commandCenter": {
+        "title": "Command Center",
+        "subtitle": "Gestiona dispatches y comunicaciones",
+        "filters": {
+            "title": "Filtros:",
+            "status": "Estado",
+            "urgency": "Urgencia",
+            "clear": "Limpiar",
+            "allStatus": "Todos los Estados",
+            "allUrgency": "Todas las Urgencias"
+        },
+        "status": {
+            "sent": "Enviado / No leído",
+            "read": "Leído",
+            "inProgress": "En Progreso",
+            "resolved": "Resuelto",
+            "convertedToTask": "Convertido"
+        },
+        "urgency": {
+            "normal": "Normal",
+            "urgent": "Urgente",
+            "critical": "Crítico"
+        },
+        "tabs": {
+            "inbox": "Bandeja de Entrada",
+            "sent": "Enviados"
+        },
+        "stats": {
+            "inbox": "Recibidos",
+            "sent": "Enviados",
+            "pending": "Pendientes",
+            "urgent": "Urgentes"
+        },
+        "quickInput": {
+            "placeholder": "Escribe un dispatch rápido...",
+            "send": "Enviar",
+            "sending": "Enviando...",
+            "selectRecipient": "Seleccionar destinatario",
+            "urgencyLevel": "Nivel de Urgencia"
+        },
+        "list": {
+            "empty": "No se encontraron dispatches",
+            "emptyFiltered": "No hay dispatches que coincidan con los filtros actuales"
+        },
+        "details": {
+            "title": "Detalles del Dispatch",
+            "from": "De",
+            "to": "Para",
+            "subject": "Asunto",
+            "message": "Mensaje",
+            "status": "Estado",
+            "urgency": "Urgencia",
+            "createdAt": "Creado",
+            "actions": {
+                "markAsRead": "Marcar como Leído",
+                "markAsInProgress": "Marcar como En Progreso",
+                "resolve": "Resolver",
+                "convertToTask": "Convertir a Tarea"
+            }
         }
     },
     "errors": {

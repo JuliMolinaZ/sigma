@@ -1,9 +1,11 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Line, LineChart, CartesianGrid } from "recharts";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { TrendingUp, Activity } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 interface DashboardChartsProps {
     revenueData?: Array<{ name: string; total: number }>;
@@ -21,17 +23,17 @@ interface DashboardChartsProps {
 }
 
 export function DashboardCharts({ revenueData, recentActivity }: DashboardChartsProps) {
-    // Default data if none provided
-    const defaultData = [
-        { name: "Ene", total: 0 },
-        { name: "Feb", total: 0 },
-        { name: "Mar", total: 0 },
-        { name: "Abr", total: 0 },
-        { name: "May", total: 0 },
-        { name: "Jun", total: 0 },
-    ];
+    const t = useTranslations('dashboard')
+    // Use real data from backend, fallback to empty array if not provided
+    const chartData = revenueData && revenueData.length > 0 ? revenueData : [];
 
-    const chartData = revenueData && revenueData.length > 0 ? revenueData : defaultData;
+    // Calculate trend
+    const totalRevenue = chartData.reduce((sum, item) => sum + item.total, 0);
+    const avgRevenue = totalRevenue / chartData.length;
+    const lastMonth = chartData[chartData.length - 1]?.total || 0;
+    const trendPercentage = chartData.length > 1
+        ? ((lastMonth - chartData[chartData.length - 2].total) / chartData[chartData.length - 2].total * 100).toFixed(1)
+        : 0;
 
     const getActivityIcon = (action: string) => {
         if (action.includes('create')) return '➕';
@@ -63,50 +65,93 @@ export function DashboardCharts({ revenueData, recentActivity }: DashboardCharts
 
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
+            <Card className="col-span-4 border-t-4 border-t-green-500">
                 <CardHeader>
-                    <CardTitle>Resumen de Ingresos</CardTitle>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle className="flex items-center gap-2">
+                                <TrendingUp className="w-5 h-5 text-green-600" />
+                                {t('charts.revenueOverview.title')}
+                            </CardTitle>
+                            <CardDescription className="mt-1">
+                                {t('charts.revenueOverview.subtitle', { count: chartData.length })}
+                            </CardDescription>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-2xl font-bold text-green-600">
+                                ${lastMonth.toLocaleString('es-MX')}
+                            </p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <span className={`font-semibold ${Number(trendPercentage) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {Number(trendPercentage) >= 0 ? '+' : ''}{trendPercentage}%
+                                </span>
+                                {t('charts.revenueOverview.trend')}
+                            </p>
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent className="pl-2">
-                    <ResponsiveContainer width="100%" height={350}>
+                    <ResponsiveContainer width="100%" height={320}>
                         <BarChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                             <XAxis
                                 dataKey="name"
                                 stroke="#888888"
-                                fontSize={12}
+                                fontSize={11}
                                 tickLine={false}
                                 axisLine={false}
                             />
                             <YAxis
                                 stroke="#888888"
-                                fontSize={12}
+                                fontSize={11}
                                 tickLine={false}
                                 axisLine={false}
-                                tickFormatter={(value) => `$${value}`}
+                                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                             />
                             <Tooltip
-                                cursor={{ fill: 'transparent' }}
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                cursor={{ fill: 'rgba(173, 250, 29, 0.1)' }}
+                                contentStyle={{
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                                    fontSize: '12px'
+                                }}
+                                formatter={(value: any) => [`$${Number(value).toLocaleString('es-MX')}`, 'Total']}
                             />
-                            <Bar dataKey="total" fill="#adfa1d" radius={[4, 4, 0, 0]} />
+                            <Bar
+                                dataKey="total"
+                                fill="url(#colorGradient)"
+                                radius={[8, 8, 0, 0]}
+                                maxBarSize={60}
+                            />
+                            <defs>
+                                <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#adfa1d" stopOpacity={0.9} />
+                                    <stop offset="100%" stopColor="#adfa1d" stopOpacity={0.6} />
+                                </linearGradient>
+                            </defs>
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
-            <Card className="col-span-3">
+            <Card className="col-span-3 border-t-4 border-t-blue-500">
                 <CardHeader>
-                    <CardTitle>Actividad Reciente</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                        <Activity className="w-5 h-5 text-blue-600" />
+                        {t('charts.recentActivity.title')}
+                    </CardTitle>
+                    <CardDescription>{t('charts.recentActivity.subtitle')}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-8">
+                    <div className="space-y-4">
                         {recentActivity && recentActivity.length > 0 ? (
-                            recentActivity.slice(0, 5).map((activity) => (
-                                <div key={activity.id} className="flex items-start">
-                                    <div className="flex-1 space-y-1">
-                                        <p className="text-sm font-medium leading-none">
-                                            {getActivityIcon(activity.action)} {activity.action}
-                                        </p>
-                                        <p className="text-sm text-muted-foreground">
+                            recentActivity.slice(0, 6).map((activity) => (
+                                <div key={activity.id} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors border border-border/50">
+                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-sm">
+                                        <span className="text-sm">{getActivityIcon(activity.action)}</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0 space-y-1">
+                                        <p className="text-sm font-medium leading-tight">
                                             {getActivityDescription(activity)}
                                         </p>
                                         <p className="text-xs text-muted-foreground">
@@ -116,9 +161,15 @@ export function DashboardCharts({ revenueData, recentActivity }: DashboardCharts
                                 </div>
                             ))
                         ) : (
-                            <p className="text-sm text-muted-foreground text-center py-4">
-                                No hay actividad reciente
-                            </p>
+                            <div className="text-center py-12">
+                                <Activity className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                                <p className="text-sm text-muted-foreground">
+                                    {t('charts.recentActivity.emptyState.title')}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    {t('charts.recentActivity.emptyState.description')}
+                                </p>
+                            </div>
                         )}
                     </div>
                 </CardContent>

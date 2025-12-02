@@ -134,6 +134,7 @@
         "expenses": "Expenses",
         "clients": "Clients",
         "suppliers": "Suppliers",
+        "command-center": "Command Center",
         "finance-dashboard": "Finance Dashboard",
         "finance-accounts": "Chart of Accounts",
         "finance-journal": "Journal Entries",
@@ -173,7 +174,15 @@
             "hoursThisWeek": "Hours This Week",
             "revenue": "Revenue",
             "expenses": "Expenses",
-            "profit": "Profit"
+            "profit": "Profit",
+            "activeProjects": "Active Projects",
+            "myActiveProjects": "My Active Projects",
+            "pendingTasks": "Pending Tasks",
+            "activeSprints": "Active Sprints",
+            "efficiency": "Efficiency",
+            "assignedTasks": "My Assigned Tasks",
+            "completedTasks": "Completed Tasks",
+            "hoursToday": "Hours Logged Today"
         },
         "widgets": {
             "activeProjects": "Active Projects",
@@ -184,6 +193,79 @@
             "newProject": "New Project",
             "newTask": "New Task",
             "logTime": "Log Time"
+        },
+        "quickActions": {
+            "purchaseOrders": {
+                "title": "Purchase Orders",
+                "description": "Pending approval",
+                "noPending": "No pending items"
+            },
+            "accountsPayable": {
+                "title": "Accounts Payable",
+                "description": "Pending payments",
+                "noPending": "No pending items"
+            },
+            "accountsReceivable": {
+                "title": "Accounts Receivable",
+                "description": "Pending collections",
+                "noPending": "No pending items"
+            },
+            "pendingTasks": {
+                "title": "Pending Tasks",
+                "description": "To be completed or approved",
+                "noPending": "No pending items"
+            },
+            "commandCenter": {
+                "title": "Command Center",
+                "description": "Pending dispatches",
+                "noPending": "No pending items"
+            },
+            "viewAll": "View All"
+        },
+        "charts": {
+            "revenueOverview": {
+                "title": "Revenue Overview",
+                "subtitle": "Last {count} months of financial activity",
+                "trend": "vs previous month",
+                "emptyState": {
+                    "title": "No recent activity",
+                    "description": "Actions will appear here"
+                }
+            },
+            "recentActivity": {
+                "title": "Recent Activity",
+                "subtitle": "Latest system actions",
+                "emptyState": {
+                    "title": "No recent activity",
+                    "description": "Actions will appear here"
+                }
+            }
+        },
+        "lists": {
+            "topClients": {
+                "title": "Top Clients",
+                "subtitle": "Clients with the most activity",
+                "invoices": "invoices",
+                "invoice": "invoice",
+                "emptyState": {
+                    "title": "No client data",
+                    "description": "Top clients will appear here"
+                }
+            },
+            "activeSuppliers": {
+                "title": "Active Suppliers",
+                "subtitle": "Suppliers with highest volume",
+                "accounts": "accounts",
+                "account": "account",
+                "emptyState": {
+                    "title": "No supplier data",
+                    "description": "Suppliers with highest volume will appear here"
+                }
+            }
+        },
+        "messages": {
+            "noAccess": "You don't have permissions to view the global dashboard or there was an error loading the data.",
+            "useMenu": "Use the sidebar menu to access your assigned modules."
         }
     },
     "projects": {
@@ -334,7 +416,11 @@
     "modules": {
         "title": "Modules Management",
         "subtitle": "Configure available modules",
-        "empty": "No modules found"
+        "empty": "No modules found",
+        "updateSuccess": "Modules updated successfully",
+        "updateError": "Error updating modules",
+        "initializeSuccess": "Modules initialized successfully",
+        "initializeError": "Error initializing modules"
     },
     "calendar": {
         "title": "Calendar",
@@ -378,6 +464,105 @@
             "light": "Light",
             "dark": "Dark",
             "system": "System"
+        }
+    },
+    "Clients": {
+        "title": "Clients",
+        "description": "Manage your clients and relationships",
+        "create": "New Client",
+        "empty": "No clients found"
+    },
+    "Suppliers": {
+        "title": "Suppliers",
+        "description": "Manage your suppliers",
+        "create": "New Supplier",
+        "empty": "No suppliers found"
+    },
+    "Finance": {
+        "AR": {
+            "title": "Accounts Receivable",
+            "description": "Manage accounts receivable",
+            "create": "New Account Receivable",
+            "empty": "No accounts receivable found"
+        },
+        "AP": {
+            "title": "Accounts Payable",
+            "description": "Manage accounts payable",
+            "create": "New Account Payable",
+            "empty": "No accounts payable found"
+        },
+        "FixedCosts": {
+            "title": "Fixed Costs",
+            "description": "Manage fixed costs",
+            "create": "New Fixed Cost",
+            "empty": "No fixed costs found"
+        },
+        "Invoices": {
+            "title": "Invoices",
+            "description": "Manage invoices",
+            "create": "New Invoice",
+            "empty": "No invoices found"
+        }
+    },
+    "commandCenter": {
+        "title": "Command Center",
+        "subtitle": "Manage dispatches and communications",
+        "filters": {
+            "title": "Filters:",
+            "status": "Status",
+            "urgency": "Urgency",
+            "clear": "Clear",
+            "allStatus": "All Status",
+            "allUrgency": "All Urgency"
+        },
+        "status": {
+            "sent": "Sent / Unread",
+            "read": "Read",
+            "inProgress": "In Progress",
+            "resolved": "Resolved",
+            "convertedToTask": "Converted"
+        },
+        "urgency": {
+            "normal": "Normal",
+            "urgent": "Urgent",
+            "critical": "Critical"
+        },
+        "tabs": {
+            "inbox": "Inbox",
+            "sent": "Sent"
+        },
+        "stats": {
+            "inbox": "Inbox",
+            "sent": "Sent",
+            "pending": "Pending",
+            "urgent": "Urgent"
+        },
+        "quickInput": {
+            "placeholder": "Write a quick dispatch...",
+            "send": "Send",
+            "sending": "Sending...",
+            "selectRecipient": "Select recipient",
+            "urgencyLevel": "Urgency Level"
+        },
+        "list": {
+            "empty": "No dispatches found",
+            "emptyFiltered": "No dispatches match the current filters"
+        },
+        "details": {
+            "title": "Dispatch Details",
+            "from": "From",
+            "to": "To",
+            "subject": "Subject",
+            "message": "Message",
+            "status": "Status",
+            "urgency": "Urgency",
+            "createdAt": "Created",
+            "actions": {
+                "markAsRead": "Mark as Read",
+                "markAsInProgress": "Mark as In Progress",
+                "resolve": "Resolve",
+                "convertToTask": "Convert to Task"
+            }
         }
     },
     "errors": {

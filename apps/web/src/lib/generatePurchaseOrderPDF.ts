@@ -14,6 +14,7 @@ export interface PurchaseOrderPDFData {
     createdBy?: { firstName: string; lastName: string };
     approvedBy?: { firstName: string; lastName: string };
     approvedAt?: string;
+    includesVAT?: boolean;
 }
 
 export function generatePurchaseOrderPDF(data: PurchaseOrderPDFData) {
@@ -61,8 +62,21 @@ export function generatePurchaseOrderPDF(data: PurchaseOrderPDFData) {
 
     // Calculate amounts
     const montoNumero = parseFloat(monto.toString()) || 0;
-    const ivaNumero = montoNumero * 0.16;
-    const totalNumero = montoNumero + ivaNumero;
+    let subtotal: number;
+    let ivaNumero: number;
+    let totalNumero: number;
+
+    if (data.includesVAT) {
+        // If amount includes VAT, we need to separate it
+        totalNumero = montoNumero;
+        subtotal = montoNumero / 1.16;
+        ivaNumero = montoNumero - subtotal;
+    } else {
+        // If amount does NOT include VAT, don't add it - the amount IS the total
+        subtotal = montoNumero;
+        ivaNumero = 0;
+        totalNumero = montoNumero;
+    }
 
     const formatter = new Intl.NumberFormat('es-MX', {
         style: 'currency',
@@ -70,7 +84,7 @@ export function generatePurchaseOrderPDF(data: PurchaseOrderPDFData) {
         minimumFractionDigits: 2,
     });
 
-    const montoMXN = formatter.format(montoNumero);
+    const subtotalMXN = formatter.format(subtotal);
     const ivaMXN = formatter.format(ivaNumero);
     const totalMXN = formatter.format(totalNumero);
 
@@ -171,7 +185,7 @@ export function generatePurchaseOrderPDF(data: PurchaseOrderPDFData) {
     doc.setFont('helvetica', 'bold');
     doc.text('Monto autorizado (MXN):', marginX + 2, y);
     doc.setFont('helvetica', 'normal');
-    doc.text(montoMXN, marginX + 65, y);
+    doc.text(totalMXN, marginX + 65, y);
 
     // Line 4: Payment dates
     y += 6;
@@ -258,7 +272,7 @@ export function generatePurchaseOrderPDF(data: PurchaseOrderPDFData) {
     let ry = resumenBoxY + 6;
 
     doc.text('Subtotal:', labelX, ry);
-    doc.text(montoMXN, valueX, ry, { align: 'right' });
+    doc.text(subtotalMXN, valueX, ry, { align: 'right' });
 
     ry += 5;
     doc.text('IVA 16%:', labelX, ry);
@@ -326,7 +340,12 @@ export function generatePurchaseOrderPDF(data: PurchaseOrderPDFData) {
     }
 
     // ===== SIGNATURE SECTION =====
-    const firmaY = Math.max(trazaBoxY + trazaBoxHeight + 15, 220);
+    // Ensure signature doesn't get cut off - if too low, add new page
+    let firmaY = trazaBoxY + trazaBoxHeight + 15;
+    if (firmaY > 200) {
+        doc.addPage();
+        firmaY = 30;
+    }
 
     doc.setDrawColor(0);
     doc.setLineWidth(0.3);
@@ -343,7 +362,7 @@ export function generatePurchaseOrderPDF(data: PurchaseOrderPDFData) {
     doc.text('DIRECCIÓN GENERAL', centerX, firmaY + 12, { align: 'center' });
 
     // ===== CONFIDENTIALITY LEGEND =====
-    const legendBoxY = 245;
+    const legendBoxY = firmaY + 25;
     doc.setFillColor(250, 250, 250);
     doc.setDrawColor(220);
     doc.rect(marginX, legendBoxY, contentWidth, 20, 'F');
@@ -361,7 +380,7 @@ export function generatePurchaseOrderPDF(data: PurchaseOrderPDFData) {
     doc.text(
         'Documento generado electrónicamente para fines de control interno.',
         pageWidth / 2,
-        270,
+        legendBoxY + 28,
         { align: 'center' }
     );
 

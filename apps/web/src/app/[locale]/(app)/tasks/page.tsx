@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, Filter, RefreshCw, Search, X, LayoutGrid, LayoutList } from 'lucide-react'
+import { Plus, Filter, RefreshCw, Search, X, LayoutGrid, LayoutList, Radio } from 'lucide-react'
 import Button from '@/components/ui/button'
 import Loader from '@/components/ui/loader'
 import { Task, Project, User, TaskDashboardStats } from '@/types'
@@ -54,6 +54,7 @@ export default function TasksPage() {
     const [filterProject, setFilterProject] = useState<string>('all')
     const [filterAssignee, setFilterAssignee] = useState<string>('all')
     const [filterPriority, setFilterPriority] = useState<string>('all')
+    const [filterSource, setFilterSource] = useState<string>('all') // 'all', 'dispatch', 'regular'
     const [searchQuery, setSearchQuery] = useState('')
 
     const role = user?.role
@@ -208,6 +209,8 @@ export default function TasksPage() {
             if (filterProject !== 'all' && task.projectId !== filterProject) return false
             if (filterAssignee !== 'all' && task.assigneeId !== filterAssignee) return false
             if (filterPriority !== 'all' && task.priority !== filterPriority) return false
+            if (filterSource === 'dispatch' && !(task as any).sourceDispatchId) return false
+            if (filterSource === 'regular' && (task as any).sourceDispatchId) return false
             if (
                 searchQuery &&
                 !task.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -221,6 +224,7 @@ export default function TasksPage() {
         filterProject !== 'all',
         filterAssignee !== 'all',
         filterPriority !== 'all',
+        filterSource !== 'all',
         searchQuery !== '',
     ].filter(Boolean).length
 
@@ -228,6 +232,7 @@ export default function TasksPage() {
         setFilterProject('all')
         setFilterAssignee('all')
         setFilterPriority('all')
+        setFilterSource('all')
         setSearchQuery('')
     }
 
@@ -369,6 +374,22 @@ export default function TasksPage() {
                         <SelectItem value="HIGH">High</SelectItem>
                         <SelectItem value="MEDIUM">Medium</SelectItem>
                         <SelectItem value="LOW">Low</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <Select value={filterSource} onValueChange={setFilterSource}>
+                    <SelectTrigger className="w-[160px] h-9 text-sm">
+                        <SelectValue placeholder="Source" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Tasks</SelectItem>
+                        <SelectItem value="dispatch">
+                            <div className="flex items-center gap-2">
+                                <Radio className="w-3 h-3 text-purple-600" />
+                                <span>From Dispatch</span>
+                            </div>
+                        </SelectItem>
+                        <SelectItem value="regular">Regular Tasks</SelectItem>
                     </SelectContent>
                 </Select>
 

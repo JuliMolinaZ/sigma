@@ -17,14 +17,18 @@ import {
 } from "lucide-react"
 import { Link } from "@/i18n/routing"
 import { usePurchaseOrders, useAccountsPayable, useAccountsReceivable } from "@/hooks/useFinance"
+import { useDispatchStats } from "@/hooks/useDispatches"
 import api from '@/lib/api'
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
+import { useTranslations } from 'next-intl'
 
 export function QuickActions() {
-    const { data: purchaseOrders } = usePurchaseOrders()
+    const t = useTranslations('dashboard.quickActions')
+    const { data: purchaseOrders} = usePurchaseOrders()
     const { data: accountsPayable } = useAccountsPayable()
     const { data: accountsReceivable } = useAccountsReceivable()
+    const { data: dispatchStats } = useDispatchStats()
     const [tasks, setTasks] = useState<any[]>([])
 
     useEffect(() => {
@@ -41,16 +45,24 @@ export function QuickActions() {
         fetchTasks()
     }, [])
 
-    // Calculate pending items
-    const pendingPOs = purchaseOrders?.filter((po: any) => po.status === 'PENDING') || []
-    const pendingAP = accountsPayable?.filter((ap: any) => ap.status === 'PENDING') || []
-    const pendingAR = accountsReceivable?.filter((ar: any) => ar.status === 'PENDING') || []
-    const pendingTasks = tasks.filter((task: any) => task.status !== 'DONE') || []
+    // Calculate pending items - show multiple statuses for better visibility
+    const pendingPOs = purchaseOrders?.filter((po: any) =>
+        ['PENDING', 'DRAFT'].includes(po.status)
+    ) || []
+    const pendingAP = accountsPayable?.filter((ap: any) =>
+        ['PENDING', 'PARTIAL', 'OVERDUE'].includes(ap.status)
+    ) || []
+    const pendingAR = accountsReceivable?.filter((ar: any) =>
+        ['PENDING', 'PARTIAL', 'OVERDUE'].includes(ar.status)
+    ) || []
+    const pendingTasks = tasks.filter((task: any) =>
+        !['DONE', 'CANCELLED'].includes(task.status)
+    ) || []
 
     const quickActions = [
         {
-            title: "Órdenes de Compra",
-            description: "Pendientes de aprobación",
+            title: t('purchaseOrders.title'),
+            description: t('purchaseOrders.description'),
             count: pendingPOs.length,
             icon: FileText,
             color: "text-blue-600 dark:text-blue-400",
@@ -59,8 +71,8 @@ export function QuickActions() {
             items: pendingPOs.slice(0, 3)
         },
         {
-            title: "Cuentas por Pagar",
-            description: "Pagos pendientes",
+            title: t('accountsPayable.title'),
+            description: t('accountsPayable.description'),
             count: pendingAP.length,
             icon: DollarSign,
             color: "text-red-600 dark:text-red-400",
@@ -69,8 +81,8 @@ export function QuickActions() {
             items: pendingAP.slice(0, 3)
         },
         {
-            title: "Cuentas por Cobrar",
-            description: "Cobros pendientes",
+            title: t('accountsReceivable.title'),
+            description: t('accountsReceivable.description'),
             count: pendingAR.length,
             icon: TrendingUp,
             color: "text-green-600 dark:text-green-400",
@@ -79,60 +91,73 @@ export function QuickActions() {
             items: pendingAR.slice(0, 3)
         },
         {
-            title: "Tareas Pendientes",
-            description: "Por realizar o aprobar",
+            title: t('pendingTasks.title'),
+            description: t('pendingTasks.description'),
             count: pendingTasks.length,
             icon: CheckCircle2,
             color: "text-purple-600 dark:text-purple-400",
             bgColor: "bg-purple-50 dark:bg-purple-950",
             href: "/tasks",
             items: pendingTasks.slice(0, 3)
+        },
+        {
+            title: t('commandCenter.title'),
+            description: t('commandCenter.description'),
+            count: dispatchStats?.unreadCount || 0,
+            icon: CheckCircle2,
+            color: "text-orange-600 dark:text-orange-400",
+            bgColor: "bg-orange-50 dark:bg-orange-950",
+            href: "/command-center",
+            items: []
         }
     ]
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             {quickActions.map((action) => {
                 const Icon = action.icon
                 return (
-                    <Card key={action.title} className="hover:shadow-lg transition-shadow">
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                                <div className={`p-2 rounded-lg ${action.bgColor}`}>
+                    <Card key={action.title} className="hover:shadow-md transition-all border-l-4" style={{ borderLeftColor: action.color.includes('blue') ? '#2563eb' : action.color.includes('red') ? '#dc2626' : action.color.includes('green') ? '#16a34a' : action.color.includes('purple') ? '#9333ea' : '#ea580c' }}>
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className={`p-2.5 rounded-xl ${action.bgColor} shadow-sm`}>
                                     <Icon className={`w-5 h-5 ${action.color}`} />
                                 </div>
-                                <Badge variant={action.count > 0 ? "destructive" : "secondary"}>
+                                <Badge
+                                    variant={action.count > 0 ? "default" : "secondary"}
+                                    className="text-xs font-semibold"
+                                >
                                     {action.count}
                                 </Badge>
                             </div>
-                            <CardTitle className="text-lg">{action.title}</CardTitle>
-                            <CardDescription>{action.description}</CardDescription>
+                            <CardTitle className="text-base font-semibold">{action.title}</CardTitle>
+                            <CardDescription className="text-xs">{action.description}</CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-2">
                             {action.items.length > 0 ? (
-                                <div className="space-y-2 mb-3">
+                                <div className="space-y-1.5 mb-3">
                                     {action.items.map((item: any, idx: number) => (
-                                        <div key={idx} className="text-sm p-2 bg-muted rounded-md">
-                                            <p className="font-medium truncate">
+                                        <div key={idx} className="text-xs p-2 bg-muted/50 rounded-lg border border-border/50 hover:bg-muted transition-colors">
+                                            <p className="font-medium truncate text-foreground">
                                                 {item.folio || item.concepto || item.title || `Item ${idx + 1}`}
                                             </p>
                                             {item.monto && (
-                                                <p className="text-xs text-muted-foreground">
-                                                    ${parseFloat(item.monto).toLocaleString('es-MX')}
+                                                <p className="text-xs text-muted-foreground mt-0.5 font-semibold">
+                                                    ${parseFloat(item.monto).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                                                 </p>
                                             )}
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-sm text-muted-foreground mb-3">
-                                    No hay elementos pendientes
+                                <p className="text-xs text-muted-foreground mb-3 text-center py-4 italic">
+                                    {t('noPending', { defaultValue: 'No hay elementos pendientes' })}
                                 </p>
                             )}
                             <Link href={action.href}>
-                                <Button variant="ghost" size="sm" className="w-full group">
-                                    Ver todos
-                                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                                <Button variant="ghost" size="sm" className="w-full group h-8 text-xs">
+                                    {t('viewAll')}
+                                    <ArrowRight className="w-3 h-3 ml-2 group-hover:translate-x-1 transition-transform" />
                                 </Button>
                             </Link>
                         </CardContent>

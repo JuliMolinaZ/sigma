@@ -109,6 +109,24 @@ export class PaymentComplementsService {
                 organizationId,
                 accountReceivableId: arId,
             },
+            include: {
+                accountReceivable: {
+                    include: {
+                        client: {
+                            select: {
+                                id: true,
+                                nombre: true,
+                            },
+                        },
+                        project: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                },
+            },
             orderBy: {
                 fechaPago: 'desc',
             },
@@ -120,6 +138,115 @@ export class PaymentComplementsService {
             where: {
                 organizationId,
                 accountPayableId: apId,
+            },
+            include: {
+                accountPayable: {
+                    include: {
+                        supplier: {
+                            select: {
+                                id: true,
+                                nombre: true,
+                            },
+                        },
+                    },
+                },
+            },
+            orderBy: {
+                fechaPago: 'desc',
+            },
+        });
+    }
+
+    async findAll(organizationId: string) {
+        return this.prisma.paymentComplement.findMany({
+            where: {
+                organizationId,
+            },
+            include: {
+                accountReceivable: {
+                    include: {
+                        client: {
+                            select: {
+                                id: true,
+                                nombre: true,
+                            },
+                        },
+                        project: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                },
+                accountPayable: {
+                    include: {
+                        supplier: {
+                            select: {
+                                id: true,
+                                nombre: true,
+                            },
+                        },
+                    },
+                },
+            },
+            orderBy: {
+                fechaPago: 'desc',
+            },
+        });
+    }
+
+    async findAllByClient(organizationId: string, clientId: string) {
+        return this.prisma.paymentComplement.findMany({
+            where: {
+                organizationId,
+                accountReceivable: {
+                    clientId: clientId,
+                },
+            },
+            include: {
+                accountReceivable: {
+                    include: {
+                        client: {
+                            select: {
+                                id: true,
+                                nombre: true,
+                            },
+                        },
+                        project: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                },
+            },
+            orderBy: {
+                fechaPago: 'desc',
+            },
+        });
+    }
+
+    async findAllBySupplier(organizationId: string, supplierId: string) {
+        return this.prisma.paymentComplement.findMany({
+            where: {
+                organizationId,
+                accountPayable: {
+                    supplierId: supplierId,
+                },
+            },
+            include: {
+                accountPayable: {
+                    include: {
+                        supplier: {
+                            select: {
+                                id: true,
+                                nombre: true,
+                            },
+                        },
+                    },
+                },
             },
             orderBy: {
                 fechaPago: 'desc',

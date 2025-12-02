@@ -28,6 +28,7 @@ import { useSuppliers } from "@/hooks/useSuppliers";
 import { useCategories, AccountPayable } from "@/hooks/useFinance";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const apSchema = z.object({
     concepto: z.string().min(3, "Concept must be at least 3 characters"),
@@ -229,7 +230,13 @@ export function APForm({ accountPayable, onSuccess, onCancel }: APFormProps) {
                             <FormItem>
                                 <FormLabel>Due Date *</FormLabel>
                                 <FormControl>
-                                    <Input type="date" {...field} />
+                                    <DatePicker
+                                        date={field.value ? new Date(field.value) : undefined}
+                                        onDateChange={(date) => {
+                                            field.onChange(date ? date.toISOString().split('T')[0] : '');
+                                        }}
+                                        placeholder="Select due date"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

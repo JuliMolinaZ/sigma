@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import { useInvoices, PaymentComplement } from "@/hooks/useFinance";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const paymentComplementSchema = z.object({
     invoiceId: z.string().min(1, "Invoice is required"),
@@ -156,7 +157,13 @@ export function PaymentComplementForm({
                             <FormItem>
                                 <FormLabel>Payment Date *</FormLabel>
                                 <FormControl>
-                                    <Input type="date" {...field} />
+                                    <DatePicker
+                                        date={field.value ? new Date(field.value) : undefined}
+                                        onDateChange={(date) => {
+                                            field.onChange(date ? date.toISOString().split('T')[0] : '');
+                                        }}
+                                        placeholder="Select payment date"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

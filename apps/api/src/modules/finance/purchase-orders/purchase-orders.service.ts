@@ -26,10 +26,10 @@ export class PurchaseOrdersService {
             subtotal = total.div(new Decimal(1).add(VAT_RATE));
             vat = total.minus(subtotal);
         } else {
-            // Amount is subtotal, we need to add VAT
+            // Amount does NOT include VAT - no VAT should be added
             subtotal = new Decimal(amount);
-            vat = subtotal.mul(VAT_RATE);
-            total = subtotal.add(vat);
+            vat = new Decimal(0);
+            total = subtotal;
         }
 
         return {

@@ -23,7 +23,8 @@ import {
     Banknote,
     Repeat,
     FileSpreadsheet,
-    ShoppingCart
+    ShoppingCart,
+    Radio
 } from 'lucide-react'
 
 export interface Module {
@@ -108,6 +109,15 @@ export const MODULES: Module[] = [
         description: 'Supplier management',
         category: 'core',
         requiredRole: ['Admin', 'Superadmin', 'CEO', 'Gerente Operaciones'],
+    },
+    {
+        id: 'command-center',
+        name: 'Command Center',
+        path: '/command-center',
+        icon: Radio,
+        description: 'Executive dispatch system',
+        category: 'core',
+        requiredRole: ['Admin', 'Superadmin', 'CEO', 'CFO', 'CTO', 'COO', 'CCO', 'Gerente Operaciones'],
     },
 
     // Finance Modules (Protected)

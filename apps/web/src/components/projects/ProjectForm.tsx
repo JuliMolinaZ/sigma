@@ -25,6 +25,7 @@ import { useClients } from "@/hooks/useClients";
 import { useUsers } from "@/hooks/useUsers";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { User as UserIcon } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const projectSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -166,7 +167,13 @@ export function ProjectForm({ initialData, onSubmit, isLoading, onCancel }: Proj
                             <FormItem>
                                 <FormLabel>Start Date</FormLabel>
                                 <FormControl>
-                                    <Input type="date" {...field} />
+                                    <DatePicker
+                                        date={field.value ? new Date(field.value) : undefined}
+                                        onDateChange={(date) => {
+                                            field.onChange(date ? date.toISOString().split('T')[0] : '');
+                                        }}
+                                        placeholder="Select start date"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -253,7 +260,13 @@ export function ProjectForm({ initialData, onSubmit, isLoading, onCancel }: Proj
                         <FormItem>
                             <FormLabel>End Date (Optional)</FormLabel>
                             <FormControl>
-                                <Input type="date" {...field} />
+                                <DatePicker
+                                    date={field.value ? new Date(field.value) : undefined}
+                                    onDateChange={(date) => {
+                                        field.onChange(date ? date.toISOString().split('T')[0] : '');
+                                    }}
+                                    placeholder="Select end date"
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

@@ -27,9 +27,18 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [sessionExpired, setSessionExpired] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
     const t = useTranslations();
 
-    // Check if session expired on mount
+    const { register, handleSubmit, formState: { errors, isSubmitting }, setValue } = useForm<LoginFormData>({
+        resolver: zodResolver(loginSchema),
+        defaultValues: {
+            email: '',
+            password: '',
+        },
+    });
+
+    // Check if session expired on mount and load remembered email
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const expired = sessionStorage.getItem('sessionExpired');
@@ -41,15 +50,29 @@ export default function LoginPage() {
                     icon: <AlertCircle className="w-5 h-5" />,
                 });
             }
-        }
-    }, []);
 
-    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>({
-        resolver: zodResolver(loginSchema),
-    });
+            // Load remembered email
+            const rememberedEmail = localStorage.getItem('rememberedEmail');
+            const rememberedMe = localStorage.getItem('rememberMe') === 'true';
+            if (rememberedEmail && rememberedMe) {
+                setRememberMe(true);
+                setValue('email', rememberedEmail);
+            }
+        }
+    }, [setValue]);
 
     const onSubmit = async (data: LoginFormData) => {
         try {
+            // Save email if "Remember me" is checked
+            if (rememberMe) {
+                localStorage.setItem('rememberedEmail', data.email);
+                localStorage.setItem('rememberMe', 'true');
+            } else {
+                // Remove saved email if unchecked
+                localStorage.removeItem('rememberedEmail');
+                localStorage.removeItem('rememberMe');
+            }
+
             await signIn(data);
             router.push('/dashboard');
         } catch (err: any) {
@@ -243,6 +266,8 @@ export default function LoginPage() {
                                 <label className="flex items-center gap-2 cursor-pointer group">
                                     <input
                                         type="checkbox"
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
                                         className="w-4 h-4 text-red-600 bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-red-500 focus:ring-2"
                                     />
                                     <span className="text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">

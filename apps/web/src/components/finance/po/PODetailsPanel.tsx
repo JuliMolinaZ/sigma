@@ -58,6 +58,7 @@ export function PODetailsPanel({
                 createdBy: purchaseOrder.createdBy,
                 approvedBy: purchaseOrder.authorizedBy,
                 approvedAt: purchaseOrder.authorizedAt,
+                includesVAT: purchaseOrder.includesVAT || false,
             })
             toast.success('PDF generado correctamente')
         } catch (error) {
@@ -73,6 +74,30 @@ export function PODetailsPanel({
         }).format(amount)
     }
 
+    // Calculate amounts correctly based on includesVAT
+    const calculateAmounts = () => {
+        const montoNumero = purchaseOrder.amount || 0;
+        let subtotal: number;
+        let iva: number;
+        let total: number;
+
+        if (purchaseOrder.includesVAT) {
+            // If amount includes VAT, we need to separate it
+            total = montoNumero;
+            subtotal = montoNumero / 1.16;
+            iva = montoNumero - subtotal;
+        } else {
+            // If amount does NOT include VAT, don't add it - the amount IS the total
+            subtotal = montoNumero;
+            iva = 0;
+            total = montoNumero;
+        }
+
+        return { subtotal, iva, total };
+    }
+
+    const amounts = calculateAmounts();
+
     const formatDate = (dateString?: string) => {
         if (!dateString) return 'N/A'
         try {
@@ -83,16 +108,16 @@ export function PODetailsPanel({
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-5">
             {/* Header with Status and Actions */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold">Orden de Compra #{purchaseOrder.folio}</h2>
-                    <p className="text-sm text-muted-foreground">
+                    <h2 className="text-lg font-semibold">Orden de Compra #{purchaseOrder.folio}</h2>
+                    <p className="text-xs text-muted-foreground">
                         Creada el {formatDate(purchaseOrder.createdAt)}
                     </p>
                 </div>
-                <Badge className={STATUS_COLORS[purchaseOrder.status as keyof typeof STATUS_COLORS]}>
+                <Badge className={`${STATUS_COLORS[purchaseOrder.status as keyof typeof STATUS_COLORS]} text-xs`}>
                     {STATUS_LABELS[purchaseOrder.status as keyof typeof STATUS_LABELS]}
                 </Badge>
             </div>
@@ -138,26 +163,26 @@ export function PODetailsPanel({
 
             {/* Main Information */}
             <Card>
-                <CardHeader>
-                    <CardTitle>Información General</CardTitle>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Información General</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                <CardContent className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <p className="text-sm font-medium text-muted-foreground">Proveedor</p>
-                            <p className="text-base">{purchaseOrder.supplier?.nombre || 'N/A'}</p>
+                            <p className="text-xs font-medium text-muted-foreground">Proveedor</p>
+                            <p className="text-sm">{purchaseOrder.supplier?.nombre || 'N/A'}</p>
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-muted-foreground">Proyecto</p>
-                            <p className="text-base">{purchaseOrder.project?.name || 'N/A'}</p>
+                            <p className="text-xs font-medium text-muted-foreground">Proyecto</p>
+                            <p className="text-sm">{purchaseOrder.project?.name || 'N/A'}</p>
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-muted-foreground">Fecha Mínima de Pago</p>
-                            <p className="text-base">{formatDate(purchaseOrder.minPaymentDate)}</p>
+                            <p className="text-xs font-medium text-muted-foreground">Fecha Mínima de Pago</p>
+                            <p className="text-sm">{formatDate(purchaseOrder.minPaymentDate)}</p>
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-muted-foreground">Fecha Máxima de Pago</p>
-                            <p className="text-base">{formatDate(purchaseOrder.maxPaymentDate)}</p>
+                            <p className="text-xs font-medium text-muted-foreground">Fecha Máxima de Pago</p>
+                            <p className="text-sm">{formatDate(purchaseOrder.maxPaymentDate)}</p>
                         </div>
                     </div>
                 </CardContent>
@@ -165,45 +190,67 @@ export function PODetailsPanel({
 
             {/* Description */}
             <Card>
-                <CardHeader>
-                    <CardTitle>Descripción</CardTitle>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Descripción</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-sm whitespace-pre-wrap">{purchaseOrder.description || 'Sin descripción'}</p>
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{purchaseOrder.description || 'Sin descripción'}</p>
+                </CardContent>
+            </Card>
+
+            {/* Financial Summary */}
+            <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Resumen Financiero</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Subtotal:</span>
+                        <span>{formatCurrency(amounts.subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">IVA (16%):</span>
+                        <span>{formatCurrency(amounts.iva)}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between text-sm font-semibold">
+                        <span>Total:</span>
+                        <span>{formatCurrency(amounts.total)}</span>
+                    </div>
                 </CardContent>
             </Card>
 
             {/* Audit Trail */}
             <Card>
-                <CardHeader>
-                    <CardTitle>Trazabilidad</CardTitle>
-                    <CardDescription>Historial de creación y aprobación</CardDescription>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Trazabilidad</CardTitle>
+                    <CardDescription className="text-xs">Historial de creación y aprobación</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                    <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+                <CardContent className="space-y-2">
+                    <div className="flex items-start gap-2 p-2.5 bg-muted rounded-lg">
                         <div className="flex-1">
-                            <p className="text-sm font-medium">Creado por</p>
-                            <p className="text-base">
+                            <p className="text-xs font-medium">Creado por</p>
+                            <p className="text-sm">
                                 {purchaseOrder.createdBy
                                     ? `${purchaseOrder.createdBy.firstName} ${purchaseOrder.createdBy.lastName}`
                                     : 'N/A'}
                             </p>
                             {purchaseOrder.createdAt && (
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <p className="text-xs text-muted-foreground mt-0.5">
                                     {formatDate(purchaseOrder.createdAt)}
                                 </p>
                             )}
                         </div>
                     </div>
                     {purchaseOrder.authorizedBy && (
-                        <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                        <div className="flex items-start gap-2 p-2.5 bg-green-50 dark:bg-green-950 rounded-lg">
                             <div className="flex-1">
-                                <p className="text-sm font-medium text-green-700 dark:text-green-300">Aprobado por</p>
-                                <p className="text-base text-green-900 dark:text-green-100">
+                                <p className="text-xs font-medium text-green-700 dark:text-green-300">Aprobado por</p>
+                                <p className="text-sm text-green-900 dark:text-green-100">
                                     {`${purchaseOrder.authorizedBy.firstName} ${purchaseOrder.authorizedBy.lastName}`}
                                 </p>
                                 {purchaseOrder.authorizedAt && (
-                                    <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                                    <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
                                         {formatDate(purchaseOrder.authorizedAt)}
                                     </p>
                                 )}
@@ -211,8 +258,8 @@ export function PODetailsPanel({
                         </div>
                     )}
                     {!purchaseOrder.authorizedBy && purchaseOrder.status !== 'DRAFT' && (
-                        <div className="flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg">
-                            <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                        <div className="flex items-start gap-2 p-2.5 bg-yellow-50 dark:bg-yellow-950 rounded-lg">
+                            <p className="text-xs text-yellow-700 dark:text-yellow-300">
                                 Pendiente de aprobación
                             </p>
                         </div>
@@ -220,36 +267,14 @@ export function PODetailsPanel({
                 </CardContent>
             </Card>
 
-            {/* Financial Summary */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Resumen Financiero</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Subtotal:</span>
-                        <span>{formatCurrency(purchaseOrder.amount || 0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">IVA (16%):</span>
-                        <span>{formatCurrency((purchaseOrder.amount || 0) * 0.16)}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between text-lg font-bold">
-                        <span>Total:</span>
-                        <span>{formatCurrency((purchaseOrder.amount || 0) * 1.16)}</span>
-                    </div>
-                </CardContent>
-            </Card>
-
             {/* Notes */}
             {purchaseOrder.comments && (
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Notas Adicionales</CardTitle>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-semibold">Notas Adicionales</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm whitespace-pre-wrap">{purchaseOrder.comments}</p>
+                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{purchaseOrder.comments}</p>
                     </CardContent>
                 </Card>
             )}

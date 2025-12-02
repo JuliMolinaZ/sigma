@@ -23,4 +23,19 @@ export class PaymentComplementsController {
     findAllByAp(@Request() req, @Param('apId') apId: string) {
         return this.paymentComplementsService.findAllByAp(req.user.organizationId, apId);
     }
+
+    @Get()
+    findAll(@Request() req) {
+        return this.paymentComplementsService.findAll(req.user.organizationId);
+    }
+
+    @Get('client/:clientId')
+    findAllByClient(@Request() req, @Param('clientId') clientId: string) {
+        return this.paymentComplementsService.findAllByClient(req.user.organizationId, clientId);
+    }
+
+    @Get('supplier/:supplierId')
+    findAllBySupplier(@Request() req, @Param('supplierId') supplierId: string) {
+        return this.paymentComplementsService.findAllBySupplier(req.user.organizationId, supplierId);
+    }
 }

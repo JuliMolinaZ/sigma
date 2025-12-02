@@ -2,8 +2,15 @@
 
 import { useState, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
-import { Plus, FileText, Check, X, Send, DollarSign, Calendar, Package, Eye, Download } from 'lucide-react'
+import { Plus, FileText, Check, X, Send, DollarSign, Calendar, Package, Eye, Download, MoreVertical, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -46,6 +53,7 @@ import { PurchaseOrder } from '@/types'
 import { format } from 'date-fns'
 import { PODetailsPanel } from '@/components/finance/po/PODetailsPanel'
 import { generatePurchaseOrderPDF } from '@/lib/generatePurchaseOrderPDF'
+import { DatePicker } from '@/components/ui/date-picker'
 
 const STATUS_COLORS = {
     DRAFT: 'bg-gray-100 text-gray-800',
@@ -63,8 +71,12 @@ const STATUS_LABELS = {
     PAID: 'Pagada',
 }
 
+import { useAuthStore } from '@/store/auth.store'
+
 export default function PurchaseOrdersPage() {
     const t = useTranslations('financePO')
+    const { user } = useAuthStore()
+    const isSuperAdmin = user?.email === 'j.molina@runsolutions-services.com'
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [isDetailsPanelOpen, setIsDetailsPanelOpen] = useState(false)
     const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null)
@@ -74,6 +86,8 @@ export default function PurchaseOrdersPage() {
     const [formSupplierId, setFormSupplierId] = useState<string>('')
     const [formProjectId, setFormProjectId] = useState<string>('')
     const [formIncludesVAT, setFormIncludesVAT] = useState<string>('false')
+    const [minPaymentDate, setMinPaymentDate] = useState<Date | undefined>(undefined)
+    const [maxPaymentDate, setMaxPaymentDate] = useState<Date | undefined>(undefined)
 
     const { data: purchaseOrders = [], refetch } = usePurchaseOrders({ search, status: statusFilter })
     const { data: suppliersData } = useSuppliers({ limit: 100 })
@@ -106,6 +120,8 @@ export default function PurchaseOrdersPage() {
         setFormSupplierId('')
         setFormProjectId('')
         setFormIncludesVAT('false')
+        setMinPaymentDate(undefined)
+        setMaxPaymentDate(undefined)
         setIsDialogOpen(true)
     }
 
@@ -114,6 +130,8 @@ export default function PurchaseOrdersPage() {
         setFormSupplierId(po.supplierId || '')
         setFormProjectId(po.projectId || '')
         setFormIncludesVAT(po.includesVAT ? 'true' : 'false')
+        setMinPaymentDate(po.minPaymentDate ? new Date(po.minPaymentDate) : undefined)
+        setMaxPaymentDate(po.maxPaymentDate ? new Date(po.maxPaymentDate) : undefined)
         setIsDialogOpen(true)
     }
 
@@ -122,13 +140,18 @@ export default function PurchaseOrdersPage() {
         const formData = new FormData(e.currentTarget)
         const comments = formData.get('comments') as string
 
+        if (!minPaymentDate || !maxPaymentDate) {
+            toast.error('Seleccione las fechas de pago mínima y máxima')
+            return
+        }
+
         const data: any = {
             folio: formData.get('folio') as string,
             description: formData.get('description') as string,
             amount: parseFloat(formData.get('amount') as string),
             includesVAT: formIncludesVAT === 'true',
-            minPaymentDate: formData.get('minPaymentDate') as string,
-            maxPaymentDate: formData.get('maxPaymentDate') as string,
+            minPaymentDate: minPaymentDate.toISOString().split('T')[0],
+            maxPaymentDate: maxPaymentDate.toISOString().split('T')[0],
         }
 
         // Only add optional fields if they have values
@@ -223,6 +246,7 @@ export default function PurchaseOrdersPage() {
                 createdBy: po.createdBy,
                 approvedBy: po.authorizedBy,
                 approvedAt: po.authorizedAt,
+                includesVAT: po.includesVAT || false,
             })
             toast.success('PDF generado correctamente')
         } catch (error) {
@@ -289,7 +313,11 @@ export default function PurchaseOrdersPage() {
                             </TableRow>
                         ) : (
                             purchaseOrders.map((po: PurchaseOrder) => (
-                                <TableRow key={po.id}>
+                                <TableRow
+                                    key={po.id}
+                                    className="cursor-pointer hover:bg-muted/50"
+                                    onClick={() => handleViewDetails(po)}
+                                >
                                     <TableCell className="font-medium">{po.folio}</TableCell>
                                     <TableCell className="max-w-xs truncate">{po.description}</TableCell>
                                     <TableCell>{po.supplier?.nombre || '-'}</TableCell>
@@ -301,48 +329,60 @@ export default function PurchaseOrdersPage() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell>{format(new Date(po.maxPaymentDate), 'dd/MM/yyyy')}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex gap-2 justify-end">
-                                            <Button size="sm" variant="ghost" onClick={() => handleViewDetails(po)}>
-                                                <Eye className="w-4 h-4 mr-1" />
-                                                Ver
+                                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                                        <div className="flex gap-1 justify-end">
+                                            <Button size="icon" variant="ghost" onClick={() => handleViewDetails(po)} title="Ver detalles">
+                                                <Eye className="w-4 h-4" />
                                             </Button>
-                                            <Button size="sm" variant="ghost" onClick={() => handleGeneratePDF(po)}>
-                                                <Download className="w-4 h-4 mr-1" />
-                                                PDF
+                                            <Button size="icon" variant="ghost" onClick={() => handleGeneratePDF(po)} title="Descargar PDF">
+                                                <Download className="w-4 h-4" />
                                             </Button>
-                                            {po.status === 'DRAFT' && (
-                                                <>
-                                                    <Button size="sm" variant="outline" onClick={() => handleEdit(po)}>
-                                                        Editar
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button size="icon" variant="ghost">
+                                                        <MoreVertical className="w-4 h-4" />
                                                     </Button>
-                                                    <Button size="sm" onClick={() => handleSubmitForApproval(po.id)}>
-                                                        <Send className="w-4 h-4 mr-1" />
-                                                        Enviar
-                                                    </Button>
-                                                    <Button size="sm" variant="destructive" onClick={() => handleDelete(po.id)}>
-                                                        Eliminar
-                                                    </Button>
-                                                </>
-                                            )}
-                                            {po.status === 'PENDING' && (
-                                                <>
-                                                    <Button size="sm" variant="outline" className="text-green-600" onClick={() => handleApprove(po.id)}>
-                                                        <Check className="w-4 h-4 mr-1" />
-                                                        Aprobar
-                                                    </Button>
-                                                    <Button size="sm" variant="outline" className="text-red-600" onClick={() => handleReject(po.id)}>
-                                                        <X className="w-4 h-4 mr-1" />
-                                                        Rechazar
-                                                    </Button>
-                                                </>
-                                            )}
-                                            {po.status === 'APPROVED' && (
-                                                <Button size="sm" onClick={() => handleMarkPaid(po.id)}>
-                                                    <DollarSign className="w-4 h-4 mr-1" />
-                                                    Marcar Pagada
-                                                </Button>
-                                            )}
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    {(po.status === 'DRAFT' || isSuperAdmin) && (
+                                                        <>
+                                                            <DropdownMenuItem onClick={() => handleEdit(po)}>
+                                                                <Edit className="w-4 h-4 mr-2" />
+                                                                Editar
+                                                            </DropdownMenuItem>
+                                                            {po.status === 'DRAFT' && (
+                                                                <DropdownMenuItem onClick={() => handleSubmitForApproval(po.id)}>
+                                                                    <Send className="w-4 h-4 mr-2" />
+                                                                    Enviar para Aprobación
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem onClick={() => handleDelete(po.id)} className="text-red-600">
+                                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                                Eliminar
+                                                            </DropdownMenuItem>
+                                                        </>
+                                                    )}
+                                                    {po.status === 'PENDING' && (
+                                                        <>
+                                                            <DropdownMenuItem onClick={() => handleApprove(po.id)} className="text-green-600">
+                                                                <Check className="w-4 h-4 mr-2" />
+                                                                Aprobar
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleReject(po.id)} className="text-red-600">
+                                                                <X className="w-4 h-4 mr-2" />
+                                                                Rechazar
+                                                            </DropdownMenuItem>
+                                                        </>
+                                                    )}
+                                                    {po.status === 'APPROVED' && (
+                                                        <DropdownMenuItem onClick={() => handleMarkPaid(po.id)}>
+                                                            <DollarSign className="w-4 h-4 mr-2" />
+                                                            Marcar como Pagada
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </div>
                                     </TableCell>
                                 </TableRow>
@@ -423,11 +463,19 @@ export default function PurchaseOrdersPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="minPaymentDate">Fecha Mínima de Pago *</Label>
-                                    <Input id="minPaymentDate" name="minPaymentDate" type="date" required defaultValue={selectedPO?.minPaymentDate?.split('T')[0]} />
+                                    <DatePicker
+                                        date={minPaymentDate}
+                                        onDateChange={setMinPaymentDate}
+                                        placeholder="Seleccionar fecha mínima"
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="maxPaymentDate">Fecha Máxima de Pago *</Label>
-                                    <Input id="maxPaymentDate" name="maxPaymentDate" type="date" required defaultValue={selectedPO?.maxPaymentDate?.split('T')[0]} />
+                                    <DatePicker
+                                        date={maxPaymentDate}
+                                        onDateChange={setMaxPaymentDate}
+                                        placeholder="Seleccionar fecha máxima"
+                                    />
                                 </div>
                             </div>
                             <div className="space-y-2">

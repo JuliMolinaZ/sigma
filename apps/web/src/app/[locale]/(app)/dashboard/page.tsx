@@ -81,7 +81,7 @@ export default function DashboardPage() {
                 {isExecutive && (
                     <>
                         <QuickActions />
-                        <DashboardCharts recentActivity={data.recentActivity} />
+                        <DashboardCharts revenueData={data.revenueData} recentActivity={data.recentActivity} />
                         <DashboardLists topClients={data.topClients || []} topSuppliers={data.topSuppliers || []} />
                     </>
                 )}

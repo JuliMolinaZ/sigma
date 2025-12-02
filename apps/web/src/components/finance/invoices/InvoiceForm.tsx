@@ -29,6 +29,7 @@ import { Invoice } from "@/hooks/useFinance";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const invoiceItemSchema = z.object({
     description: z.string().min(1, "Description is required"),
@@ -186,7 +187,13 @@ export function InvoiceForm({ invoice, onSuccess, onCancel }: InvoiceFormProps) 
                             <FormItem>
                                 <FormLabel>Issue Date *</FormLabel>
                                 <FormControl>
-                                    <Input type="date" {...field} />
+                                    <DatePicker
+                                        date={field.value ? new Date(field.value) : undefined}
+                                        onDateChange={(date) => {
+                                            field.onChange(date ? date.toISOString().split('T')[0] : '');
+                                        }}
+                                        placeholder="Select issue date"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -200,7 +207,13 @@ export function InvoiceForm({ invoice, onSuccess, onCancel }: InvoiceFormProps) 
                             <FormItem>
                                 <FormLabel>Due Date *</FormLabel>
                                 <FormControl>
-                                    <Input type="date" {...field} />
+                                    <DatePicker
+                                        date={field.value ? new Date(field.value) : undefined}
+                                        onDateChange={(date) => {
+                                            field.onChange(date ? date.toISOString().split('T')[0] : '');
+                                        }}
+                                        placeholder="Select due date"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

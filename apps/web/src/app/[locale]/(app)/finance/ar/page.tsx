@@ -157,7 +157,11 @@ export default function ARPage() {
             <Sheet open={!!selectedId} onOpenChange={(open) => !open && setSelectedId(null)}>
                 <SheetContent
                     side="right"
-                    className="w-[400px] sm:w-[540px] md:w-[600px] p-0 border-l border-gray-200 dark:border-gray-800"
+                    className="p-0 border-l border-gray-200 dark:border-gray-800 overflow-y-auto"
+                    style={{ 
+                        width: 'min(95vw, 800px)',
+                        maxWidth: '800px'
+                    }}
                 >
                     <SheetTitle className="sr-only">Details</SheetTitle>
                     {selectedId && (

@@ -82,6 +82,11 @@ export class AnalyticsService {
                     _count: {
                         select: { invoices: true },
                     },
+                    invoices: {
+                        select: {
+                            amount: true,
+                        },
+                    },
                 },
             }),
             this.prisma.supplier.findMany({
@@ -96,11 +101,56 @@ export class AnalyticsService {
                     _count: {
                         select: { accountsPayable: true },
                     },
+                    accountsPayable: {
+                        select: {
+                            monto: true,
+                        },
+                    },
                 },
             }),
         ]);
 
         const tasksCompletionRate = tasksCount > 0 ? (completedTasks / tasksCount) * 100 : 0;
+
+        // Calculate monthly revenue for the last 12 months
+        const now = new Date();
+        const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+        const invoicesForRevenue = await this.prisma.invoice.findMany({
+            where: {
+                organizationId,
+                issueDate: {
+                    gte: twelveMonthsAgo,
+                },
+            },
+            select: {
+                amount: true,
+                issueDate: true,
+            },
+        });
+
+        // Group by month
+        const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const revenueByMonth: Record<string, number> = {};
+
+        invoicesForRevenue.forEach(invoice => {
+            if (invoice.issueDate) {
+                const date = new Date(invoice.issueDate);
+                const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+                revenueByMonth[monthKey] = (revenueByMonth[monthKey] || 0) + Number(invoice.amount);
+            }
+        });
+
+        // Create array of last 12 months with data
+        const revenueData = [];
+        for (let i = 11; i >= 0; i--) {
+            const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+            revenueData.push({
+                name: monthNames[date.getMonth()],
+                total: revenueByMonth[monthKey] || 0,
+            });
+        }
 
         return {
             projects: {
@@ -127,12 +177,15 @@ export class AnalyticsService {
                 id: c.id,
                 name: c.nombre,
                 invoicesCount: c._count.invoices,
+                revenue: c.invoices.reduce((sum, inv) => sum + Number(inv.amount), 0),
             })),
             topSuppliers: topSuppliers.map(s => ({
                 id: s.id,
                 name: s.nombre,
                 apCount: s._count.accountsPayable,
+                totalSpent: s.accountsPayable.reduce((sum, ap) => sum + Number(ap.monto), 0),
             })),
+            revenueData,
             recentActivity,
         };
     }

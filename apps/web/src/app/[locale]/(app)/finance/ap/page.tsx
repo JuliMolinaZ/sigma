@@ -38,6 +38,7 @@ import { KPICard } from '@/components/ui/kpi-card'
 import { APDataTable } from '@/components/finance/ap/APDataTable'
 import { APDetailsPanel } from '@/components/finance/ap/APDetailsPanel'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { DatePicker } from '@/components/ui/date-picker'
 
 export default function AccountsPayablePage() {
     const t = useTranslations('financeAP')
@@ -47,6 +48,7 @@ export default function AccountsPayablePage() {
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false)
     const [paymentAmount, setPaymentAmount] = useState('')
     const [formSupplierId, setFormSupplierId] = useState<string>('')
+    const [fechaVencimiento, setFechaVencimiento] = useState<Date | undefined>(undefined)
 
     // Fetch all accounts without status filter to handle filtering client-side
     const { data: allAccountsPayable = [], isLoading, refetch } = useAccountsPayable({ status: undefined })
@@ -133,12 +135,14 @@ export default function AccountsPayablePage() {
     const handleCreate = () => {
         setSelectedAP(null)
         setFormSupplierId('')
+        setFechaVencimiento(undefined)
         setIsDialogOpen(true)
     }
 
     const handleEdit = (ap: AccountPayable) => {
         setSelectedAP(ap)
         setFormSupplierId(ap.supplierId || '')
+        setFechaVencimiento(ap.fechaVencimiento ? new Date(ap.fechaVencimiento) : undefined)
         setIsDialogOpen(true)
     }
 
@@ -147,10 +151,15 @@ export default function AccountsPayablePage() {
         const formData = new FormData(e.currentTarget)
         const notas = formData.get('notas') as string
 
+        if (!fechaVencimiento) {
+            toast.error('Seleccione una fecha de vencimiento')
+            return
+        }
+
         const data: any = {
             concepto: formData.get('concepto') as string,
             monto: parseFloat(formData.get('monto') as string),
-            fechaVencimiento: new Date(formData.get('fechaVencimiento') as string).toISOString(),
+            fechaVencimiento: fechaVencimiento.toISOString(),
         }
 
         if (formSupplierId && formSupplierId !== '') data.supplierId = formSupplierId
@@ -338,7 +347,14 @@ export default function AccountsPayablePage() {
 
             {/* Details Panel Sheet */}
             <Sheet open={!!selectedAPId} onOpenChange={(open) => !open && setSelectedAPId(null)}>
-                <SheetContent className="w-full sm:max-w-xl p-0 overflow-y-auto">
+                <SheetContent 
+                    side="right"
+                    className="p-0 border-l border-gray-200 dark:border-gray-800 overflow-y-auto"
+                    style={{ 
+                        width: 'min(95vw, 800px)',
+                        maxWidth: '800px'
+                    }}
+                >
                     <SheetTitle className="hidden">Detalles de Cuenta por Pagar</SheetTitle>
                     {selectedAPId && (
                         <APDetailsPanel
@@ -411,12 +427,10 @@ export default function AccountsPayablePage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="fechaVencimiento">Fecha de Vencimiento *</Label>
-                                    <Input
-                                        id="fechaVencimiento"
-                                        name="fechaVencimiento"
-                                        type="date"
-                                        required
-                                        defaultValue={selectedAP?.fechaVencimiento?.split('T')[0]}
+                                    <DatePicker
+                                        date={fechaVencimiento}
+                                        onDateChange={setFechaVencimiento}
+                                        placeholder="Seleccionar fecha de vencimiento"
                                     />
                                 </div>
                             </div>

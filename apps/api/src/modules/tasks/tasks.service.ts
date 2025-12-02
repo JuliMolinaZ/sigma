@@ -35,7 +35,8 @@ export class TasksService {
         }
 
         // RBAC: Admin, CEO, or Project Owner (Product Owner) can create tasks
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const roleName = typeof role === 'string' ? role : role?.name;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(roleName?.toUpperCase());
         const isProjectOwner = project.ownerId === userId;
         const isProjectCoOwner = project.owners?.some(o => o.id === userId);
 
@@ -157,7 +158,8 @@ export class TasksService {
             organizationId,
         };
 
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const roleName = typeof role === 'string' ? role : role?.name;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(roleName?.toUpperCase());
 
         if (!isAdmin) {
             // If not admin, check if user is a Project Owner (Product Owner) or just a Dev
@@ -408,7 +410,8 @@ export class TasksService {
             throw new NotFoundException('Task not found');
         }
 
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const roleName = typeof role === 'string' ? role : role?.name;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(roleName?.toUpperCase());
 
         // Check if user is Project Owner
         const isProjectOwner = task.project.ownerId === userId;
@@ -426,7 +429,8 @@ export class TasksService {
 
         const task = await this.findOne(id, user); // Checks read permission
 
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const roleName = typeof role === 'string' ? role : role?.name;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(roleName?.toUpperCase());
         const isProjectOwner = task.project.ownerId === userId || task.project.owners?.some(o => o.id === userId);
         const isReporter = task.reporterId === userId;
 
@@ -652,7 +656,8 @@ export class TasksService {
         if (!task) throw new NotFoundException('Task not found');
 
         // RBAC: Only Admin, Manager, CEO, or Project Owner can assign tasks
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'PROJECT MANAGER', 'GERENTE OPERACIONES', 'CEO'].includes(role?.toUpperCase());
+        const roleName = typeof role === 'string' ? role : role?.name;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'PROJECT MANAGER', 'GERENTE OPERACIONES', 'CEO'].includes(roleName?.toUpperCase());
         const isProjectOwner = task.project.ownerId === userId;
 
         if (!isAdmin && !isProjectOwner) {
@@ -721,7 +726,8 @@ export class TasksService {
 
         if (!task) throw new NotFoundException('Task not found');
 
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const roleName = typeof role === 'string' ? role : role?.name;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(roleName?.toUpperCase());
         const isProjectOwner = task.project.ownerId === userId;
 
         if (!isAdmin && !isProjectOwner && task.reporterId !== userId) {
@@ -736,8 +742,8 @@ export class TasksService {
     async getDashboardStats(user: any) {
         const { organizationId, role, id: userId } = user;
 
-        // Check if user is Admin/Manager
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'PROJECT MANAGER', 'CEO', 'COO', 'CTO', 'CFO'].includes(role?.toUpperCase());
+        const roleName = typeof role === 'string' ? role : role?.name;
+        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(roleName?.toUpperCase());
 
         // Base where clause
         const whereClause: any = { organizationId };

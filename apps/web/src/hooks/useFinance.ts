@@ -85,14 +85,40 @@ export interface Invoice {
 
 export interface PaymentComplement {
     id: string;
-    number: string;
-    invoiceId: string;
+    number?: string;
+    invoiceId?: string;
     invoice?: { number: string; client?: { nombre: string } };
-    date: string;
-    amount: number;
-    paymentMethod: string;
+    date?: string;
+    amount?: number;
+    paymentMethod?: string;
     transactionId?: string;
     notes?: string;
+    // Campos del backend
+    fechaPago?: string;
+    monto?: number;
+    formaPago?: string;
+    accountReceivableId?: string;
+    accountPayableId?: string;
+    accountReceivable?: {
+        id: string;
+        concepto: string;
+        client?: {
+            id: string;
+            nombre: string;
+        };
+        project?: {
+            id: string;
+            name: string;
+        };
+    };
+    accountPayable?: {
+        id: string;
+        concepto: string;
+        supplier?: {
+            id: string;
+            nombre: string;
+        };
+    };
 }
 
 // Hooks
@@ -400,6 +426,34 @@ export function usePaymentComplementsByAP(apId: string) {
     });
 }
 
+export function usePaymentComplementsByClient(clientId: string, options?: { enabled?: boolean }) {
+    return useQuery({
+        queryKey: ["payment-complements", "client", clientId],
+        queryFn: async () => {
+            const response = await api.get(`/finance/payment-complements/client/${clientId}`);
+            const body = response.data;
+            if (Array.isArray(body)) return body;
+            if (body?.data && Array.isArray(body.data)) return body.data;
+            return [];
+        },
+        enabled: options?.enabled !== undefined ? options.enabled : !!clientId,
+    });
+}
+
+export function usePaymentComplementsBySupplier(supplierId: string, options?: { enabled?: boolean }) {
+    return useQuery({
+        queryKey: ["payment-complements", "supplier", supplierId],
+        queryFn: async () => {
+            const response = await api.get(`/finance/payment-complements/supplier/${supplierId}`);
+            const body = response.data;
+            if (Array.isArray(body)) return body;
+            if (body?.data && Array.isArray(body.data)) return body.data;
+            return [];
+        },
+        enabled: options?.enabled !== undefined ? options.enabled : !!supplierId,
+    });
+}
+
 export function useCreatePaymentComplement() {
     const queryClient = useQueryClient();
     return useMutation({
@@ -408,10 +462,25 @@ export function useCreatePaymentComplement() {
             return response.data;
         },
         onSuccess: (_, variables) => {
+            // Invalidate all payment complement queries (includes ar, ap, client, supplier)
             queryClient.invalidateQueries({ queryKey: ["payment-complements"] });
-            queryClient.invalidateQueries({ queryKey: ["accounts-receivable"] });
-            queryClient.invalidateQueries({ queryKey: ["accounts-receivable", variables.accountReceivableId] });
-            queryClient.invalidateQueries({ queryKey: ["payment-complements", "ar", variables.accountReceivableId] });
+            
+            // Invalidate AR-related queries
+            if (variables.accountReceivableId) {
+                queryClient.invalidateQueries({ queryKey: ["accounts-receivable"] });
+                queryClient.invalidateQueries({ queryKey: ["accounts-receivable", variables.accountReceivableId] });
+                queryClient.invalidateQueries({ queryKey: ["payment-complements", "ar", variables.accountReceivableId] });
+            }
+            
+            // Invalidate AP-related queries
+            if (variables.accountPayableId) {
+                queryClient.invalidateQueries({ queryKey: ["accounts-payable"] });
+                queryClient.invalidateQueries({ queryKey: ["accounts-payable", variables.accountPayableId] });
+                queryClient.invalidateQueries({ queryKey: ["payment-complements", "ap", variables.accountPayableId] });
+            }
+            
+            // Force immediate refetch
+            queryClient.refetchQueries({ queryKey: ["payment-complements"], type: 'active' });
         },
     });
 }

@@ -27,6 +27,7 @@ import { Expense } from "@/types";
 import { Loader2 } from "lucide-react";
 import { toast } from 'sonner';
 import { useProjects } from "@/hooks/useProjects";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const EXPENSE_CATEGORIES = [
     "Transportation",
@@ -164,7 +165,13 @@ export function ExpenseForm({ expense, onSuccess, onCancel }: ExpenseFormProps) 
                             <FormItem>
                                 <FormLabel>Date *</FormLabel>
                                 <FormControl>
-                                    <Input type="date" {...field} />
+                                    <DatePicker
+                                        date={field.value ? new Date(field.value) : undefined}
+                                        onDateChange={(date) => {
+                                            field.onChange(date ? date.toISOString().split('T')[0] : '');
+                                        }}
+                                        placeholder="Select expense date"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

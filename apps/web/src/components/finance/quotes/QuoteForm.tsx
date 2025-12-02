@@ -29,6 +29,7 @@ import { Quote } from "@/hooks/useFinance";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const quoteItemSchema = z.object({
     description: z.string().min(1, "Description is required"),
@@ -186,7 +187,13 @@ export function QuoteForm({ quote, onSuccess, onCancel }: QuoteFormProps) {
                             <FormItem>
                                 <FormLabel>Date *</FormLabel>
                                 <FormControl>
-                                    <Input type="date" {...field} />
+                                    <DatePicker
+                                        date={field.value ? new Date(field.value) : undefined}
+                                        onDateChange={(date) => {
+                                            field.onChange(date ? date.toISOString().split('T')[0] : '');
+                                        }}
+                                        placeholder="Select quote date"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -200,7 +207,13 @@ export function QuoteForm({ quote, onSuccess, onCancel }: QuoteFormProps) {
                             <FormItem>
                                 <FormLabel>Valid Until *</FormLabel>
                                 <FormControl>
-                                    <Input type="date" {...field} />
+                                    <DatePicker
+                                        date={field.value ? new Date(field.value) : undefined}
+                                        onDateChange={(date) => {
+                                            field.onChange(date ? date.toISOString().split('T')[0] : '');
+                                        }}
+                                        placeholder="Select expiration date"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
