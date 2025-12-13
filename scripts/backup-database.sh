@@ -6,6 +6,12 @@ set -e
 
 echo "🗄️  Iniciando backup de la base de datos..."
 
+# Cargar variables desde .env si existe
+if [ -f .env ]; then
+    echo "📄 Cargando variables desde .env..."
+    export $(grep -v '^#' .env | xargs)
+fi
+
 # Variables de configuración (ajusta según tu entorno local)
 DB_HOST=${DB_HOST:-localhost}
 DB_PORT=${DB_PORT:-5432}

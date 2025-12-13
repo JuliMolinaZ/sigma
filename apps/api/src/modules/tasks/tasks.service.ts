@@ -6,6 +6,7 @@ import { QueryTaskDto } from './dto/query-task.dto';
 import { MoveTaskDto } from './dto/move-task.dto';
 import { AssignTaskDto } from './dto/assign-task.dto';
 import { TaskStatus } from '@prisma/client';
+import { EXECUTIVE_ROLES } from '../../common/constants/roles.constants';
 
 @Injectable()
 export class TasksService {
@@ -36,7 +37,7 @@ export class TasksService {
 
         // RBAC: Admin, CEO, or Project Owner (Product Owner) can create tasks
         const roleName = typeof role === 'string' ? role : role?.name;
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(roleName?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(roleName?.toUpperCase());
         const isProjectOwner = project.ownerId === userId;
         const isProjectCoOwner = project.owners?.some(o => o.id === userId);
 
@@ -152,14 +153,27 @@ export class TasksService {
         const { organizationId, id: userId, role } = user;
         const { projectId, sprintId, assigneeId, status, priority, search, page = 1, limit = 50 } = query;
 
+        // Validate required fields
+        if (!organizationId || !userId) {
+            throw new BadRequestException('Missing required user information');
+        }
+
         const skip = (page - 1) * limit;
 
         const where: any = {
             organizationId,
         };
 
-        const roleName = typeof role === 'string' ? role : role?.name;
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(roleName?.toUpperCase());
+        // Normalize role name - handle both string and object formats
+        let roleName = '';
+        if (typeof role === 'string') {
+            roleName = role;
+        } else if (role && typeof role === 'object' && role.name) {
+            roleName = role.name;
+        }
+        
+        const normalizedRoleName = roleName ? roleName.toUpperCase().trim() : '';
+        const isAdmin = normalizedRoleName ? EXECUTIVE_ROLES.some(r => r.toUpperCase() === normalizedRoleName) : false;
 
         if (!isAdmin) {
             // If not admin, check if user is a Project Owner (Product Owner) or just a Dev
@@ -183,17 +197,27 @@ export class TasksService {
                     // User is PO of this project, can see all
                     where.projectId = projectId;
                 } else {
-                    // User is NOT PO, so must be Dev -> only assigned tasks
+                    // User is NOT PO, so must be Dev -> only assigned tasks OR reported tasks
                     where.projectId = projectId;
-                    where.assigneeId = userId;
+                    where.OR = [
+                        { assigneeId: userId },
+                        { reporterId: userId }
+                    ];
                 }
             } else {
                 // No specific project, show:
-                // Tasks assigned to me OR Tasks in projects I own
-                where.OR = [
+                // Tasks assigned to me OR Tasks I reported OR Tasks in projects I own
+                const orConditions: any[] = [
                     { assigneeId: userId },
-                    { projectId: { in: ownedProjectIds } }
+                    { reporterId: userId }
                 ];
+                
+                // Only add project filter if user owns projects
+                if (ownedProjectIds.length > 0) {
+                    orConditions.push({ projectId: { in: ownedProjectIds } });
+                }
+                
+                where.OR = orConditions;
             }
         } else {
             // Admin sees all, apply filters if present
@@ -236,12 +260,13 @@ export class TasksService {
             ];
         }
 
-        const [tasks, total] = await Promise.all([
-            this.prisma.task.findMany({
-                where,
-                skip,
-                take: limit,
-                include: {
+        try {
+            const [tasks, total] = await Promise.all([
+                this.prisma.task.findMany({
+                    where,
+                    skip,
+                    take: limit,
+                    include: {
                     assignee: {
                         select: {
                             id: true,
@@ -277,20 +302,24 @@ export class TasksService {
                         },
                     },
                 },
-                orderBy: [{ status: 'asc' }, { position: 'asc' }],
-            }),
-            this.prisma.task.count({ where }),
-        ]);
+                    orderBy: [{ status: 'asc' }, { position: 'asc' }],
+                }),
+                this.prisma.task.count({ where }),
+            ]);
 
-        return {
-            data: tasks,
-            meta: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-            },
-        };
+            return {
+                data: tasks,
+                meta: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit),
+                },
+            };
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            throw new BadRequestException(`Error fetching tasks: ${errorMessage}`);
+        }
     }
 
     async findKanban(organizationId: string, projectId: string, sprintId?: string) {
@@ -411,7 +440,7 @@ export class TasksService {
         }
 
         const roleName = typeof role === 'string' ? role : role?.name;
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(roleName?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(roleName?.toUpperCase());
 
         // Check if user is Project Owner
         const isProjectOwner = task.project.ownerId === userId;
@@ -430,7 +459,7 @@ export class TasksService {
         const task = await this.findOne(id, user); // Checks read permission
 
         const roleName = typeof role === 'string' ? role : role?.name;
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(roleName?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(roleName?.toUpperCase());
         const isProjectOwner = task.project.ownerId === userId || task.project.owners?.some(o => o.id === userId);
         const isReporter = task.reporterId === userId;
 
@@ -657,7 +686,7 @@ export class TasksService {
 
         // RBAC: Only Admin, Manager, CEO, or Project Owner can assign tasks
         const roleName = typeof role === 'string' ? role : role?.name;
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'PROJECT MANAGER', 'GERENTE OPERACIONES', 'CEO'].includes(roleName?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(roleName?.toUpperCase());
         const isProjectOwner = task.project.ownerId === userId;
 
         if (!isAdmin && !isProjectOwner) {
@@ -727,7 +756,7 @@ export class TasksService {
         if (!task) throw new NotFoundException('Task not found');
 
         const roleName = typeof role === 'string' ? role : role?.name;
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(roleName?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(roleName?.toUpperCase());
         const isProjectOwner = task.project.ownerId === userId;
 
         if (!isAdmin && !isProjectOwner && task.reporterId !== userId) {
@@ -743,7 +772,7 @@ export class TasksService {
         const { organizationId, role, id: userId } = user;
 
         const roleName = typeof role === 'string' ? role : role?.name;
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'MANAGER', 'CEO', 'GERENTE OPERACIONES'].includes(roleName?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(roleName?.toUpperCase());
 
         // Base where clause
         const whereClause: any = { organizationId };

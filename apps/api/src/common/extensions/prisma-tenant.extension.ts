@@ -9,7 +9,9 @@ export const prismaTenantExtension = (prisma: PrismaClient) => {
                     const tenantId = TenantContext.getTenantId();
 
                     // Models to exclude from tenant filtering (e.g., Organization itself, or System tables)
-                    const globalModels = ['Organization', 'AuditLog', 'Session', 'PasswordResetToken'];
+                    // Permission is global and not tenant-specific
+                    // RolePermission is a junction table without organizationId (filtering is done through Role relation)
+                    const globalModels = ['Organization', 'AuditLog', 'Session', 'PasswordResetToken', 'Permission', 'RolePermission'];
 
                     if (tenantId && !globalModels.includes(model)) {
                         if (operation === 'findUnique' || operation === 'findFirst' || operation === 'findMany' || operation === 'count' || operation === 'aggregate' || operation === 'groupBy') {

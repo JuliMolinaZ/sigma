@@ -70,8 +70,8 @@ export default function DashboardPage() {
     const isPM = ['PROJECT MANAGER', 'SUPERVISOR'].includes(userRole.toUpperCase())
 
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <div className="flex items-center justify-between space-y-2">
+        <div className="flex-1 space-y-4 p-3 sm:p-4 md:p-6 lg:p-8 pt-4 sm:pt-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
                 <Heading title={t('title', { name: user?.firstName || '' })} description={t('subtitle')} />
             </div>
             <Separator />
@@ -89,7 +89,7 @@ export default function DashboardPage() {
                 {/* PM View */}
                 {isPM && (
                     <>
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
                             <Card className="p-6">
                                 <h3 className="text-sm font-medium text-gray-500">{t('stats.activeProjects', { defaultValue: 'Mis Proyectos Activos' })}</h3>
                                 <p className="text-2xl font-bold mt-2">{data.projects?.active || 0}</p>

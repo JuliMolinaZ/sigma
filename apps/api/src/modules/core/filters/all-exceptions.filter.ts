@@ -18,6 +18,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
         const response = ctx.getResponse<Response>();
         const request = ctx.getRequest<Request>();
 
+        // Ignore Next.js internal routes silently (HMR, webpack, etc.)
+        if (request.url.startsWith('/_next/') || request.url.startsWith('/_vercel/')) {
+            response.status(404).end();
+            return;
+        }
+
         const status =
             exception instanceof HttpException
                 ? exception.getStatus()

@@ -66,6 +66,10 @@ export class AccountsReceivableService {
                             name: true,
                         },
                     },
+                    paymentComplements: {
+                        orderBy: { fechaPago: 'desc' },
+                        take: 5, // Mostrar los últimos 5 pagos
+                    },
                 },
             }),
             this.prisma.accountReceivable.count({ where }),

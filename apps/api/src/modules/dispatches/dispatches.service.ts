@@ -9,24 +9,15 @@ import { CreateDispatchDto } from './dto/create-dispatch.dto';
 import { PatchDispatchDto } from './dto/patch-dispatch.dto';
 import { QueryDispatchDto } from './dto/query-dispatch.dto';
 import { DispatchStatus, TaskPriority, User, Role, UrgencyLevel, Prisma } from '@prisma/client';
+import { EXECUTIVE_ROLES } from '../../common/constants/roles.constants';
+import { WebhooksService } from '../webhooks/webhooks.service';
 
 // Types
 type RequestUser = User & { role: Role };
 
 // Constants
-const EXECUTIVE_ROLES = [
-    'SUPERADMIN',
-    'SUPER_ADMIN',
-    'ADMINISTRATOR',
-    'CEO',
-    'CFO',
-    'CTO',
-    'COO',
-    'CCO',
-    'GERENTE OPERACIONES',
-    'GERENTE',
-    'MANAGER'
-];
+// Constants
+// EXECUTIVE_ROLES imported from constants
 
 const USER_SELECT = {
     id: true,
@@ -43,7 +34,10 @@ const USER_SELECT = {
 
 @Injectable()
 export class DispatchesService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly webhooksService: WebhooksService,
+    ) { }
 
     async create(user: RequestUser, createDispatchDto: CreateDispatchDto) {
         const { id: userId, organizationId } = user;
@@ -62,7 +56,7 @@ export class DispatchesService {
         }
 
         // Create dispatch
-        return this.prisma.dispatch.create({
+        const dispatch = await this.prisma.dispatch.create({
             data: {
                 content: createDispatchDto.content,
                 description: createDispatchDto.description,
@@ -82,6 +76,11 @@ export class DispatchesService {
                 attachments: true,
             },
         });
+
+        // Trigger Webhook
+        this.webhooksService.triggerWebhook('dispatch.created', dispatch, organizationId);
+
+        return dispatch;
     }
 
     async findAll(user: RequestUser, query: QueryDispatchDto) {

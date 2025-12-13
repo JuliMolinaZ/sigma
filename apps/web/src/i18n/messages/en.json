@@ -220,7 +220,8 @@
                 "description": "Pending dispatches",
                 "noPending": "No pending items"
             },
-            "viewAll": "View All"
+            "viewAll": "View All",
+            "noPending": "No pending items"
         },
         "charts": {
             "revenueOverview": {

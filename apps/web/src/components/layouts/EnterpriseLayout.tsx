@@ -55,10 +55,14 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
                 </div>
 
                 {/* Mobile Header & Sidebar */}
-                <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-16 bg-gray-900 border-b border-gray-800 flex items-center px-4 justify-between">
-                    <div className="flex items-center gap-3">
+                <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-16 bg-gray-900 border-b border-gray-800 flex items-center px-3 sm:px-4 justify-between shadow-lg">
+                    <div className="flex items-center gap-2 sm:gap-3">
                         <MobileSidebar />
-                        <span className="font-semibold text-lg text-white">Sigma</span>
+                        <span className="font-semibold text-base sm:text-lg text-white">Sigma</span>
+                    </div>
+                    {/* Mobile user menu - simplified */}
+                    <div className="flex items-center gap-2">
+                        <Navbar />
                     </div>
                 </div>
 
@@ -69,7 +73,10 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
                         sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
                     )}
                 >
-                    <Navbar />
+                    {/* Desktop Navbar */}
+                    <div className="hidden lg:block">
+                        <Navbar />
+                    </div>
 
                     {/* Page Content */}
                     <main className="p-3 sm:p-4 md:p-6 overflow-x-hidden">

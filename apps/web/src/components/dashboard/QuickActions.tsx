@@ -34,12 +34,29 @@ export function QuickActions() {
     useEffect(() => {
         const fetchTasks = async () => {
             try {
-                const res = await api.get('/tasks')
-                const tasksList = Array.isArray(res.data) ? res.data :
-                    Array.isArray(res.data?.data) ? res.data.data : []
+                const res = await api.get('/tasks', {
+                    params: {
+                        page: 1,
+                        limit: 100 // Get enough tasks for the dashboard
+                    }
+                })
+                // Handle different response structures
+                let tasksList: any[] = []
+                if (Array.isArray(res.data)) {
+                    tasksList = res.data
+                } else if (Array.isArray(res.data?.data)) {
+                    tasksList = res.data.data
+                } else if (res.data?.data && Array.isArray(res.data.data)) {
+                    tasksList = res.data.data
+                }
                 setTasks(tasksList)
-            } catch (error) {
-                console.error('Failed to fetch tasks:', error)
+            } catch (error: any) {
+                // Only log if it's not a silent error
+                if (!error?.silent && !error?.isSessionExpired) {
+                    console.error('Failed to fetch tasks:', error?.response?.data?.message || error?.message || 'Unknown error')
+                }
+                // Set empty array on error to prevent UI issues
+                setTasks([])
             }
         }
         fetchTasks()
@@ -113,7 +130,7 @@ export function QuickActions() {
     ]
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
             {quickActions.map((action) => {
                 const Icon = action.icon
                 return (

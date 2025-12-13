@@ -160,3 +160,30 @@ body {
 .dark .custom-scrollbar {
   scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
 }
+
+/* Sidebar Scrollbar Styles - Homogeneous with gray-900 background */
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: #111827; /* gray-900 */
+  border-radius: 4px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: #374151; /* gray-700 */
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #4B5563; /* gray-600 */
+}
+
+/* Firefox */
+.sidebar-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #374151 #111827; /* gray-700 gray-900 */
+}

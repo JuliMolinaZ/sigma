@@ -1,6 +1,7 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { hasFinancialAccess } from '../constants/roles.constants';
 
 /**
  * Financial Data Interceptor
@@ -9,15 +10,6 @@ import { map } from 'rxjs/operators';
  * This interceptor automatically removes financial fields from API responses
  * for users without financial access.
  */
-
-const FINANCIAL_ROLES = [
-    'Superadmin',
-    'CEO',
-    'Owner',
-    'CFO',
-    'Contador Senior',
-    'Contador',
-];
 
 const FINANCIAL_FIELDS = [
     'amount',
@@ -47,7 +39,8 @@ export class FinancialDataInterceptor implements NestInterceptor {
         return next.handle().pipe(
             map(data => {
                 // If user has financial access, return data as is
-                if (user && FINANCIAL_ROLES.includes(user.role)) {
+                const userRole = user?.role ? (typeof user.role === 'object' ? user.role.name : user.role) : '';
+                if (user && hasFinancialAccess(userRole)) {
                     return data;
                 }
 

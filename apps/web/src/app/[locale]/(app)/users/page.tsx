@@ -1,17 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Plus, Search, MoreVertical, Edit, Trash2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Loader from '@/components/ui/loader'
-import { User } from '@/types'
-import api from '@/lib/api'
+import { useUsers, useCreateUser, useUpdateUser, useDeleteUser, type User, type CreateUserDto, type UpdateUserDto } from '@/hooks/useUsers'
 import { getInitials } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth.store'
-import { toast } from 'sonner'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,6 +33,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+import api from '@/lib/api'
+import { useQuery } from '@tanstack/react-query'
 
 interface Role {
     id: string
@@ -43,221 +43,388 @@ interface Role {
 
 export default function UsersPage() {
     const { user: currentUser } = useAuthStore()
-    const isSuperAdmin = currentUser?.email === 'j.molina@runsolutions-services.com'
+    const { data: users = [], isLoading } = useUsers()
+    const createUser = useCreateUser()
+    const updateUser = useUpdateUser()
+    const deleteUser = useDeleteUser()
 
-    const [users, setUsers] = useState<User[]>([])
-    const [roles, setRoles] = useState<Role[]>([])
-    const [loading, setLoading] = useState(true)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [isCreateMode, setIsCreateMode] = useState(false)
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
+    const [searchQuery, setSearchQuery] = useState('')
 
-    const fetchData = async () => {
-        try {
-            const [usersRes, rolesRes] = await Promise.all([
-                api.get<{ success: boolean, data: User[] }>('/users'),
-                api.get<{ success: boolean, data: Role[] }>('/roles')
-            ])
-            setUsers(usersRes.data.data || [])
+    // Allowed roles for user creation/editing
+    const ALLOWED_ROLES = [
+        'Superadmin',
+        'CEO',
+        'CFO',
+        'Contador Senior',
+        'Gerente Operaciones',
+        'Supervisor',
+        'Project Manager',
+        'Developer',
+        'Operario',
+    ]
 
-            // Handle roles response structure
-            const rolesData = rolesRes.data as any
-            if (Array.isArray(rolesData)) setRoles(rolesData)
-            else if (Array.isArray(rolesData.data)) setRoles(rolesData.data)
-            else setRoles([])
+    // Fetch roles and filter to only allowed ones
+    const { data: allRoles = [] } = useQuery<Role[]>({
+        queryKey: ['roles'],
+        queryFn: async () => {
+            const response = await api.get('/roles')
+            const body = response.data
+            if (Array.isArray(body)) return body
+            if (body?.data && Array.isArray(body.data)) return body.data
+            return []
+        },
+    })
 
-        } catch (error) {
-            console.error('Failed to fetch data:', error)
-            toast.error('Error al cargar usuarios')
-        } finally {
-            setLoading(false)
-        }
+    // Filter roles to only show allowed ones
+    const roles = allRoles.filter(role => 
+        ALLOWED_ROLES.some(allowed => 
+            role.name.toLowerCase() === allowed.toLowerCase()
+        )
+    )
+
+    // Check permissions - allow if user has users:create, users:update, or users:delete permissions
+    // For now, using email check as fallback
+    const canManageUsers = currentUser?.email === 'j.molina@runsolutions-services.com' || 
+                          (currentUser?.role && typeof currentUser.role === 'object' && 
+                           ['Superadmin', 'Admin', 'CEO', 'CFO', 'CTO', 'COO'].includes(currentUser.role.name))
+
+    const handleCreate = () => {
+        setSelectedUser(null)
+        setIsCreateMode(true)
+        setIsDialogOpen(true)
     }
-
-    useEffect(() => {
-        fetchData()
-    }, [])
 
     const handleEdit = (user: User) => {
         setSelectedUser(user)
+        setIsCreateMode(false)
         setIsDialogOpen(true)
     }
 
     const handleDelete = async (userId: string) => {
-        if (!confirm('¿Estás seguro de eliminar este usuario?')) return
-        try {
-            await api.delete(`/users/${userId}`)
-            toast.success('Usuario eliminado correctamente')
-            fetchData()
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Error al eliminar usuario')
-        }
+        if (!confirm('¿Estás seguro de eliminar este usuario? Esta acción no se puede deshacer.')) return
+        deleteUser.mutate(userId)
     }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         const formData = new FormData(e.currentTarget)
-        const data = {
-            firstName: formData.get('firstName'),
-            lastName: formData.get('lastName'),
-            email: formData.get('email'),
-            roleId: formData.get('roleId'),
+        
+        const data: CreateUserDto | UpdateUserDto = {
+            firstName: formData.get('firstName') as string,
+            lastName: formData.get('lastName') as string,
+            email: formData.get('email') as string,
+            roleId: formData.get('roleId') as string,
+        }
+
+        // Add password only for create
+        if (isCreateMode) {
+            (data as CreateUserDto).password = formData.get('password') as string
         }
 
         try {
-            if (selectedUser) {
-                await api.patch(`/users/${selectedUser.id}`, data)
-                toast.success('Usuario actualizado correctamente')
-            } else {
-                // Handle create if needed, though button says "Invite User"
-                // For now just update logic
+            if (isCreateMode) {
+                await createUser.mutateAsync(data as CreateUserDto)
+            } else if (selectedUser) {
+                await updateUser.mutateAsync({ id: selectedUser.id, data: data as UpdateUserDto })
             }
             setIsDialogOpen(false)
-            fetchData()
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Error al guardar usuario')
+            setSelectedUser(null)
+        } catch (error) {
+            // Error handling is done in the hooks
         }
     }
 
+    // Filter users by search query
+    const filteredUsers = users.filter(user => {
+        if (!searchQuery) return true
+        const query = searchQuery.toLowerCase()
+        return (
+            user.firstName.toLowerCase().includes(query) ||
+            user.lastName.toLowerCase().includes(query) ||
+            user.email.toLowerCase().includes(query) ||
+            (typeof user.role === 'object' ? user.role.name : user.role).toLowerCase().includes(query)
+        )
+    })
+
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Users</h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">Manage team members and permissions</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">Usuarios</h1>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Gestiona miembros del equipo y permisos</p>
                 </div>
-                {isSuperAdmin && (
-                    <Button><Plus className="w-4 h-4 mr-2" />Invite User</Button>
+                {canManageUsers && (
+                    <Button onClick={handleCreate} className="w-full sm:w-auto">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Crear Usuario
+                    </Button>
                 )}
             </div>
 
-            <Card className="p-4">
-                <div className="flex items-center gap-4">
+            <Card className="p-3 sm:p-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                     <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search users..."
-                            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            placeholder="Buscar usuarios..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 sm:pl-10 pr-4 py-2 text-sm sm:text-base rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         />
                     </div>
                 </div>
             </Card>
 
             <Card className="p-0 overflow-hidden">
-                {loading ? (
-                    <div className="p-12">
-                        <Loader size="lg" text="Loading users..." />
+                {isLoading ? (
+                    <div className="p-8 sm:p-12">
+                        <Loader size="lg" text="Cargando usuarios..." />
+                    </div>
+                ) : filteredUsers.length === 0 ? (
+                    <div className="p-8 sm:p-12 text-center">
+                        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
+                            {searchQuery ? 'No se encontraron usuarios' : 'No hay usuarios registrados'}
+                        </p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">User</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Email</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Role</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                                    {isSuperAdmin && <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>}
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                {users.map((user) => (
-                                    <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-8 w-8">
-                                                    <AvatarImage src={user.avatarUrl || undefined} alt={user.firstName} />
-                                                    <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <div className="font-medium text-gray-900 dark:text-gray-100">
-                                                        {user.firstName} {user.lastName}
-                                                    </div>
+                    <>
+                        {/* Mobile Card View */}
+                        <div className="lg:hidden space-y-3 p-4">
+                            {filteredUsers.map((user) => (
+                                <Card key={user.id} className="p-4">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <Avatar className="h-10 w-10 shrink-0">
+                                                <AvatarImage src={user.avatarUrl || undefined} alt={user.firstName} />
+                                                <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                                                    {user.firstName} {user.lastName}
+                                                </div>
+                                                <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                                                    {user.email}
+                                                </div>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <Badge variant="secondary" className="text-xs">
+                                                        {typeof user.role === 'object' ? user.role.name : user.role}
+                                                    </Badge>
+                                                    <Badge variant={user.isActive ? "default" : "secondary"} className="text-xs">
+                                                        {user.isActive ? 'Activo' : 'Inactivo'}
+                                                    </Badge>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{user.email}</td>
-                                        <td className="px-6 py-4">
-                                            <Badge variant="secondary">{typeof user.role === 'object' ? user.role.name : user.role}</Badge>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <Badge variant="success">Active</Badge>
-                                        </td>
-                                        {isSuperAdmin && (
-                                            <td className="px-6 py-4 text-right">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button size="icon" variant="ghost">
-                                                            <MoreVertical className="w-4 h-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => handleEdit(user)}>
-                                                            <Edit className="w-4 h-4 mr-2" />
-                                                            Editar
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleDelete(user.id)} className="text-red-600">
-                                                            <Trash2 className="w-4 h-4 mr-2" />
-                                                            Eliminar
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </td>
+                                        </div>
+                                        {canManageUsers && (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button size="icon" variant="ghost" className="shrink-0">
+                                                        <MoreVertical className="w-4 h-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => handleEdit(user)}>
+                                                        <Edit className="w-4 h-4 mr-2" />
+                                                        Editar
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem 
+                                                        onClick={() => handleDelete(user.id)} 
+                                                        className="text-red-600"
+                                                        disabled={user.id === currentUser?.id}
+                                                    >
+                                                        <Trash2 className="w-4 h-4 mr-2" />
+                                                        Eliminar
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        )}
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+
+                        {/* Desktop Table View */}
+                        <div className="hidden lg:block overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Usuario</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Email</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Rol</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Estado</th>
+                                        {canManageUsers && (
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Acciones</th>
                                         )}
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    {filteredUsers.map((user) => (
+                                        <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="h-8 w-8">
+                                                        <AvatarImage src={user.avatarUrl || undefined} alt={user.firstName} />
+                                                        <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div>
+                                                        <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                            {user.firstName} {user.lastName}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{user.email}</td>
+                                            <td className="px-6 py-4">
+                                                <Badge variant="secondary">
+                                                    {typeof user.role === 'object' ? user.role.name : user.role}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <Badge variant={user.isActive ? "default" : "secondary"}>
+                                                    {user.isActive ? 'Activo' : 'Inactivo'}
+                                                </Badge>
+                                            </td>
+                                            {canManageUsers && (
+                                                <td className="px-6 py-4 text-right">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button size="icon" variant="ghost">
+                                                                <MoreVertical className="w-4 h-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onClick={() => handleEdit(user)}>
+                                                                <Edit className="w-4 h-4 mr-2" />
+                                                                Editar
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem 
+                                                                onClick={() => handleDelete(user.id)} 
+                                                                className="text-red-600"
+                                                                disabled={user.id === currentUser?.id}
+                                                            >
+                                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                                Eliminar
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </td>
+                                            )}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
                 )}
             </Card>
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent>
+            {/* Create/Edit Dialog */}
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+                setIsDialogOpen(open)
+                if (!open) {
+                    setSelectedUser(null)
+                    setIsCreateMode(false)
+                }
+            }}>
+                <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Editar Usuario</DialogTitle>
+                        <DialogTitle>
+                            {isCreateMode ? 'Crear Nuevo Usuario' : 'Editar Usuario'}
+                        </DialogTitle>
                         <DialogDescription>
-                            Modificar información del usuario
+                            {isCreateMode 
+                                ? 'Completa la información para crear un nuevo usuario'
+                                : 'Modifica la información del usuario'}
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSubmit}>
                         <div className="grid gap-4 py-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="firstName">Nombre</Label>
-                                    <Input id="firstName" name="firstName" defaultValue={selectedUser?.firstName} required />
+                                    <Label htmlFor="firstName">Nombre *</Label>
+                                    <Input 
+                                        id="firstName" 
+                                        name="firstName" 
+                                        defaultValue={selectedUser?.firstName} 
+                                        required 
+                                    />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="lastName">Apellido</Label>
-                                    <Input id="lastName" name="lastName" defaultValue={selectedUser?.lastName} required />
+                                    <Label htmlFor="lastName">Apellido *</Label>
+                                    <Input 
+                                        id="lastName" 
+                                        name="lastName" 
+                                        defaultValue={selectedUser?.lastName} 
+                                        required 
+                                    />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input id="email" name="email" type="email" defaultValue={selectedUser?.email} required />
+                                <Label htmlFor="email">Email *</Label>
+                                <Input 
+                                    id="email" 
+                                    name="email" 
+                                    type="email" 
+                                    defaultValue={selectedUser?.email} 
+                                    required 
+                                />
                             </div>
+                            {isCreateMode && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="password">Contraseña *</Label>
+                                    <Input 
+                                        id="password" 
+                                        name="password" 
+                                        type="password" 
+                                        minLength={8}
+                                        required 
+                                        placeholder="Mínimo 8 caracteres"
+                                    />
+                                </div>
+                            )}
                             <div className="space-y-2">
-                                <Label htmlFor="roleId">Rol</Label>
-                                <Select name="roleId" defaultValue={typeof selectedUser?.role === 'object' ? selectedUser.role.id : undefined}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Seleccionar rol" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {roles.map((role) => (
-                                            <SelectItem key={role.id} value={role.id}>
-                                                {role.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <Label htmlFor="roleId">Rol *</Label>
+                                <select
+                                    id="roleId"
+                                    name="roleId"
+                                    defaultValue={typeof selectedUser?.role === 'object' ? selectedUser.role.id : undefined}
+                                    required
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="">Seleccionar rol</option>
+                                    {roles.map((role) => (
+                                        <option key={role.id} value={role.id}>
+                                            {role.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                onClick={() => {
+                                    setIsDialogOpen(false)
+                                    setSelectedUser(null)
+                                    setIsCreateMode(false)
+                                }}
+                            >
                                 Cancelar
                             </Button>
-                            <Button type="submit">
-                                Guardar Cambios
+                            <Button 
+                                type="submit"
+                                disabled={createUser.isPending || updateUser.isPending}
+                            >
+                                {createUser.isPending || updateUser.isPending 
+                                    ? 'Guardando...' 
+                                    : isCreateMode 
+                                        ? 'Crear Usuario' 
+                                        : 'Guardar Cambios'}
                             </Button>
                         </DialogFooter>
                     </form>

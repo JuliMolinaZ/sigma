@@ -27,7 +27,7 @@ export function DashboardLists({ topClients, topSuppliers }: DashboardListsProps
     };
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
             <Card className="border-t-4 border-t-purple-500">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">

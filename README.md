@@ -254,7 +254,7 @@ pnpm format
 
 ## Deployment
 
-See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed deployment instructions.
+### Docker Production Build
 
 ### Docker Production Build
 
@@ -273,15 +273,10 @@ docker run -p 3000:3000 sigma-erp-api
 
 ## Documentation
 
-- [Architecture Overview](./docs/ARCHITECTURE.md)
-- [Enterprise Architecture](./docs/ENTERPRISE_ARCHITECTURE.md)
-- [Permissions System](./docs/PERMISSIONS.md)
-- [Security Guide](./docs/SECURITY.md)
-- [Finance Module](./docs/FINANCE.md)
-- [Deployment Guide](./docs/DEPLOYMENT.md)
 - [API Documentation](http://localhost:3000/api/docs)
 - [Database Schema](./apps/api/prisma/schema.prisma)
-- [Quick Start Guide](./QUICKSTART.md)
+- [Vulnerability Analysis](./docs/VULNERABILITY_ANALYSIS.md)
+- [Roles System](./docs/ROLES_SYSTEM.md)
 
 ## Roadmap
 

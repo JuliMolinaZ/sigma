@@ -3,9 +3,17 @@ import { AppModule } from './app.module';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import helmet from 'helmet';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as express from 'express';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule, {
+        bodyParser: false, // Disable default body parser to configure custom limits
+    });
+
+    // Increase body parser limit for image uploads (50MB)
+    // Configure custom body parser with increased limits
+    app.use(express.json({ limit: '50mb' }));
+    app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
     // Security Headers
     app.use(helmet());

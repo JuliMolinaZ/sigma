@@ -10,6 +10,7 @@ interface AuthState {
     signUp: (data: any) => Promise<void>;
     signOut: () => Promise<void>;
     restoreSession: () => Promise<void>;
+    setUser: (user: User) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -94,5 +95,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         } catch (e) {
             set({ isLoading: false });
         }
+    },
+
+    setUser: (user: User) => {
+        localStorage.setItem('user', JSON.stringify(user));
+        set({ user });
     },
 }));

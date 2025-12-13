@@ -33,7 +33,7 @@ export default function ThemeSwitcher() {
             onClick={handleClick}
             type="button"
             className={cn(
-                "relative w-9 h-9 rounded-lg transition-all duration-300 cursor-pointer",
+                "relative w-8 h-8 sm:w-9 sm:h-9 rounded-lg transition-all duration-300 cursor-pointer",
                 "bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900",
                 "hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-700 dark:hover:to-gray-800",
                 "border border-gray-200 dark:border-gray-700",
@@ -44,16 +44,16 @@ export default function ThemeSwitcher() {
             title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
             aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
         >
-            <div className="relative w-5 h-5">
+            <div className="relative w-4 h-4 sm:w-5 sm:h-5">
                 <Sun 
                     className={cn(
-                        "absolute inset-0 w-5 h-5 text-amber-500 transition-all duration-300",
+                        "absolute inset-0 w-4 h-4 sm:w-5 sm:h-5 text-amber-500 transition-all duration-300",
                         isDark ? "opacity-0 rotate-90 scale-0" : "opacity-100 rotate-0 scale-100"
                     )} 
                 />
                 <Moon 
                     className={cn(
-                        "absolute inset-0 w-5 h-5 text-indigo-600 dark:text-indigo-400 transition-all duration-300",
+                        "absolute inset-0 w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 dark:text-indigo-400 transition-all duration-300",
                         isDark ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-0"
                     )} 
                 />

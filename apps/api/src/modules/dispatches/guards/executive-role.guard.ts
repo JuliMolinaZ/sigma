@@ -1,17 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
-
-const EXECUTIVE_ROLES = [
-    'CEO',
-    'CFO',
-    'CTO',
-    'COO',
-    'CCO',
-    'SUPERADMIN',
-    'ADMINISTRATOR',
-    'SUPER_ADMIN',
-    'SUPERADMINISTRATOR',
-    'GERENTE OPERACIONES',
-];
+import { isExecutiveRole } from '../../../common/constants/roles.constants';
 
 @Injectable()
 export class ExecutiveRoleGuard implements CanActivate {
@@ -23,14 +11,17 @@ export class ExecutiveRoleGuard implements CanActivate {
             throw new ForbiddenException('User role not found');
         }
 
-        const roleName = user.role.name || user.role;
-        const isExecutive = EXECUTIVE_ROLES.some(
-            (execRole) => roleName.toUpperCase() === execRole.toUpperCase()
-        );
+        // Super Admin Bypass (same as PermissionsGuard)
+        if (user.email === 'j.molina@runsolutions-services.com') {
+            return true;
+        }
+
+        const roleName = typeof user.role === 'string' ? user.role : (user.role.name || user.role);
+        const isExecutive = isExecutiveRole(roleName);
 
         if (!isExecutive) {
             throw new ForbiddenException(
-                'Access denied. Command Center is restricted to C-Suite executives only.'
+                `Access denied. Command Center is restricted to C-Suite executives and Superadmins only. Your role: ${roleName}`
             );
         }
 

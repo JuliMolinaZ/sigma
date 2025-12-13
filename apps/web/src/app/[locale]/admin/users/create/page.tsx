@@ -1,134 +1,188 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useCreateUser } from '@/hooks/useUsers';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Card } from '@/components/ui/card';
 
 const createUserSchema = z.object({
-    firstName: z.string().min(2, 'First name is required'),
-    lastName: z.string().min(2, 'Last name is required'),
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    roleId: z.string().min(1, 'Role is required'),
+    firstName: z.string().min(2, 'El nombre es requerido'),
+    lastName: z.string().min(2, 'El apellido es requerido'),
+    email: z.string().email('Email inválido'),
+    password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
+    roleId: z.string().min(1, 'El rol es requerido'),
 });
 
 type CreateUserFormData = z.infer<typeof createUserSchema>;
 
 export default function CreateUserPage() {
     const router = useRouter();
-    const [roles, setRoles] = useState<{ id: string; name: string }[]>([]);
-    const [error, setError] = useState('');
+    const createUser = useCreateUser();
 
-    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<CreateUserFormData>({
+    // Allowed roles for user creation/editing
+    const ALLOWED_ROLES = [
+        'Superadmin',
+        'CEO',
+        'CFO',
+        'Contador Senior',
+        'Gerente Operaciones',
+        'Supervisor',
+        'Project Manager',
+        'Developer',
+        'Operario',
+    ];
+
+    // Fetch roles and filter to only allowed ones
+    const { data: allRoles = [] } = useQuery({
+        queryKey: ['roles'],
+        queryFn: async () => {
+            const response = await api.get('/roles');
+            const body = response.data;
+            if (Array.isArray(body)) return body;
+            if (body?.data && Array.isArray(body.data)) return body.data;
+            return [];
+        },
+    });
+
+    // Filter roles to only show allowed ones
+    const roles = allRoles.filter((role: { id: string; name: string }) => 
+        ALLOWED_ROLES.some(allowed => 
+            role.name.toLowerCase() === allowed.toLowerCase()
+        )
+    );
+
+    const { register, handleSubmit, control, formState: { errors } } = useForm<CreateUserFormData>({
         resolver: zodResolver(createUserSchema),
     });
 
-    useEffect(() => {
-        const fetchRoles = async () => {
-            try {
-                const response = await api.get('/roles');
-                setRoles(response.data);
-            } catch (error) {
-                console.error('Failed to fetch roles', error);
-            }
-        };
-        fetchRoles();
-    }, []);
-
     const onSubmit = async (data: CreateUserFormData) => {
         try {
-            await api.post('/users', data);
-            router.push('/admin/users');
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to create user');
+            await createUser.mutateAsync(data);
+            router.push('/users');
+        } catch (error) {
+            // Error handling is done in the hook
         }
     };
 
     return (
-        <div className="max-w-2xl mx-auto py-8">
-            <h1 className="text-2xl font-bold mb-6">Create New User</h1>
+        <div className="container max-w-2xl mx-auto py-8 px-4">
+            <div className="mb-6">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Crear Nuevo Usuario</h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">Completa la información para crear un nuevo usuario</p>
+            </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg shadow">
-                <div className="grid grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">First Name</label>
-                        <input
-                            {...register('firstName')}
-                            type="text"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                        />
-                        {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>}
+            <Card className="p-6">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="firstName">Nombre *</Label>
+                            <Input
+                                id="firstName"
+                                {...register('firstName')}
+                                type="text"
+                                placeholder="Juan"
+                            />
+                            {errors.firstName && (
+                                <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="lastName">Apellido *</Label>
+                            <Input
+                                id="lastName"
+                                {...register('lastName')}
+                                type="text"
+                                placeholder="Pérez"
+                            />
+                            {errors.lastName && (
+                                <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>
+                            )}
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Last Name</label>
-                        <input
-                            {...register('lastName')}
-                            type="text"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email *</Label>
+                        <Input
+                            id="email"
+                            {...register('email')}
+                            type="email"
+                            placeholder="usuario@ejemplo.com"
                         />
-                        {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>}
+                        {errors.email && (
+                            <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                        )}
                     </div>
-                </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
-                    <input
-                        {...register('email')}
-                        type="email"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                    />
-                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
-                </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="password">Contraseña *</Label>
+                        <Input
+                            id="password"
+                            {...register('password')}
+                            type="password"
+                            placeholder="Mínimo 8 caracteres"
+                        />
+                        {errors.password && (
+                            <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+                        )}
+                    </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Password</label>
-                    <input
-                        {...register('password')}
-                        type="password"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                    />
-                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
-                </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="roleId">Rol *</Label>
+                        <Controller
+                            name="roleId"
+                            control={control}
+                            render={({ field }) => (
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Seleccionar rol" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {roles.map((role) => (
+                                            <SelectItem key={role.id} value={role.id}>
+                                                {role.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        />
+                        {errors.roleId && (
+                            <p className="text-red-500 text-xs mt-1">{errors.roleId.message}</p>
+                        )}
+                    </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Role</label>
-                    <select
-                        {...register('roleId')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                    >
-                        <option value="">Select a role</option>
-                        {roles.map((role) => (
-                            <option key={role.id} value={role.id}>
-                                {role.name}
-                            </option>
-                        ))}
-                    </select>
-                    {errors.roleId && <p className="text-red-500 text-xs mt-1">{errors.roleId.message}</p>}
-                </div>
-
-                {error && <div className="text-red-500 text-sm">{error}</div>}
-
-                <div className="flex justify-end space-x-3">
-                    <button
-                        type="button"
-                        onClick={() => router.back()}
-                        className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-                    >
-                        {isSubmitting ? 'Creating...' : 'Create User'}
-                    </button>
-                </div>
-            </form>
+                    <div className="flex justify-end space-x-3 pt-4">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => router.back()}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={createUser.isPending}
+                        >
+                            {createUser.isPending ? 'Creando...' : 'Crear Usuario'}
+                        </Button>
+                    </div>
+                </form>
+            </Card>
         </div>
     );
 }

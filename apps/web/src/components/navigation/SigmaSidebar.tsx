@@ -28,7 +28,12 @@ export default function SigmaSidebar({ isCollapsed = false, onToggle }: SigmaSid
             // If no modules configured, show all modules
             return null
         }
-        return new Set(enabledModules.map((m) => m.moduleId))
+        // Only include modules that are enabled
+        return new Set(
+            enabledModules
+                .filter((m) => m.isEnabled)
+                .map((m) => m.moduleId)
+        )
     }, [enabledModules])
 
     // Debugging log
@@ -96,7 +101,7 @@ export default function SigmaSidebar({ isCollapsed = false, onToggle }: SigmaSid
                         </div>
                         <div className="flex flex-col">
                             <span className="font-bold text-xl tracking-tight">{APP_NAME.split(' ')[0]}</span>
-                            <span className="text-xs text-gray-400">v3.0.1</span>
+                            <span className="text-xs text-gray-400">v3.0.3</span>
                         </div>
                     </Link>
                 )}
@@ -110,7 +115,7 @@ export default function SigmaSidebar({ isCollapsed = false, onToggle }: SigmaSid
             </div>
 
             {/* Navigation - Scrollable */}
-            <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+            <nav className="flex-1 overflow-y-auto p-3 space-y-1 sidebar-scrollbar">
                 {Object.entries(modulesByCategory).map(([category, modules]) => {
                     if (modules.length === 0) return null
 

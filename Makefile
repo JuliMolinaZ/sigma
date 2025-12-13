@@ -38,6 +38,9 @@ clean: ## Limpiar contenedores y volúmenes (¡CUIDADO!)
 backup: ## Crear backup de la base de datos
 	@./scripts/backup-database.sh
 
+backup-emergency: ## Extraer backup desde servidor remoto (emergencia)
+	@./scripts/extract-backup-from-server.sh
+
 restore: ## Restaurar base de datos (uso: make restore FILE=backups/archivo.sql.gz)
 	@if [ -z "$(FILE)" ]; then \
 		echo "Error: Especifica el archivo con FILE=backups/archivo.sql.gz"; \

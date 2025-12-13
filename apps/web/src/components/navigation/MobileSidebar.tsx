@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link, usePathname } from '@/i18n/routing'
 import { cn } from '@/lib/utils'
 import { MODULES, APP_NAME } from '@/lib/constants'
 import { ChevronDown, ChevronRight, Menu } from 'lucide-react'
 import { useAuthStore } from '@/store/auth.store'
 import { useTranslations } from 'next-intl'
+import { useEnabledModules } from '@/hooks/useOrganizationModules'
 import {
     Sheet,
     SheetContent,
@@ -23,6 +24,21 @@ export default function MobileSidebar() {
     const [expandedSections, setExpandedSections] = useState<string[]>(['core', 'finance', 'admin', 'tools'])
     const [open, setOpen] = useState(false)
     const t = useTranslations('navigation')
+    const { data: enabledModules } = useEnabledModules()
+
+    // Create a Set of enabled module IDs for quick lookup
+    const enabledModuleIds = useMemo(() => {
+        if (!enabledModules || !Array.isArray(enabledModules) || enabledModules.length === 0) {
+            // If no modules configured, show all modules
+            return null
+        }
+        // Only include modules that are enabled
+        return new Set(
+            enabledModules
+                .filter((m) => m.isEnabled)
+                .map((m) => m.moduleId)
+        )
+    }, [enabledModules])
 
     const toggleSection = (section: string) => {
         setExpandedSections(prev =>
@@ -33,9 +49,18 @@ export default function MobileSidebar() {
     }
 
     const canAccessModule = (module: typeof MODULES[0]) => {
+        // Check if module is enabled in organization settings
+        if (enabledModuleIds !== null && !enabledModuleIds.has(module.id)) {
+            return false
+        }
+
+        // Check role-based access
         if (!module.requiredRole) return true
         if (!user) return false
+
+        // Handle both string role and object role (from relation)
         const userRole = typeof user.role === 'object' ? (user.role as any).name : user.role
+
         return module.requiredRole.includes(userRole)
     }
 
@@ -49,7 +74,12 @@ export default function MobileSidebar() {
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden">
+                <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="lg:hidden text-white hover:bg-gray-800 hover:text-white"
+                    aria-label="Abrir menú"
+                >
                     <Menu className="h-6 w-6" />
                     <span className="sr-only">Toggle menu</span>
                 </Button>
@@ -68,12 +98,12 @@ export default function MobileSidebar() {
                         </div>
                         <div className="flex flex-col">
                             <span className="font-bold text-xl">{APP_NAME}</span>
-                            <span className="text-xs text-gray-400">v3.0.1</span>
+                            <span className="text-xs text-gray-400">v3.0.3</span>
                         </div>
                     </SheetTitle>
                 </SheetHeader>
 
-                <nav className="flex-1 overflow-y-auto p-3 space-y-1 h-[calc(100vh-8rem)]">
+                <nav className="flex-1 overflow-y-auto p-3 space-y-1 h-[calc(100vh-8rem)] sidebar-scrollbar">
                     {Object.entries(modulesByCategory).map(([category, modules]) => {
                         if (modules.length === 0) return null
                         const isExpanded = expandedSections.includes(category)

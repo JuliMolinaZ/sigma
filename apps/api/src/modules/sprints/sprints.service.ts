@@ -3,6 +3,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { CreateSprintDto } from './dto/create-sprint.dto';
 import { UpdateSprintDto } from './dto/update-sprint.dto';
 import { QuerySprintDto } from './dto/query-sprint.dto';
+import { EXECUTIVE_ROLES } from '../../common/constants/roles.constants';
 
 @Injectable()
 export class SprintsService {
@@ -12,7 +13,7 @@ export class SprintsService {
         const { id: userId, organizationId, role } = user;
 
         // RBAC: Check user role
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(role?.toUpperCase());
         const isProjectManager = ['PROJECT MANAGER', 'PROJECT_MANAGER'].includes(role?.toUpperCase());
 
         // Verify project exists and belongs to organization
@@ -134,7 +135,7 @@ export class SprintsService {
         };
 
         // RBAC: If not Admin, restrict to projects they have access to
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'SUPERADMINISTRATOR', 'ADMINISTRATOR', 'CEO', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(role?.toUpperCase());
 
         if (!isAdmin) {
             // Get projects user has access to
@@ -296,7 +297,7 @@ export class SprintsService {
         }
 
         // RBAC Check
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'SUPERADMINISTRATOR', 'ADMINISTRATOR', 'CEO', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(role?.toUpperCase());
 
         if (!isAdmin) {
             // Check if user has access to the project
@@ -322,7 +323,7 @@ export class SprintsService {
         const sprint = await this.findOne(id, user);
 
         // RBAC: Check user role and project relationship
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(role?.toUpperCase());
         const isProjectManager = ['PROJECT MANAGER', 'PROJECT_MANAGER'].includes(role?.toUpperCase());
         const isProjectOwner = sprint.project.ownerId === userId;
         const isProjectCoOwner = sprint.project.owners.some(o => o.id === userId);
@@ -442,7 +443,7 @@ export class SprintsService {
         const sprint = await this.findOne(id, user);
 
         // RBAC: Check user role and project relationship
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(role?.toUpperCase());
         const isProjectManager = ['PROJECT MANAGER', 'PROJECT_MANAGER'].includes(role?.toUpperCase());
         const isProjectOwner = sprint.project.ownerId === userId;
         const isProjectCoOwner = sprint.project.owners.some(o => o.id === userId);

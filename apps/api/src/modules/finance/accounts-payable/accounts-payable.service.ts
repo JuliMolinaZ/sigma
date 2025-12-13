@@ -75,6 +75,10 @@ export class AccountsPayableService {
                             color: true,
                         },
                     },
+                    paymentComplements: {
+                        orderBy: { fechaPago: 'desc' },
+                        take: 5, // Mostrar los últimos 5 pagos
+                    },
                 },
             }),
             this.prisma.accountPayable.count({ where }),
@@ -100,6 +104,9 @@ export class AccountsPayableService {
             include: {
                 supplier: true,
                 category: true,
+                paymentComplements: {
+                    orderBy: { fechaPago: 'desc' },
+                },
             },
         });
 

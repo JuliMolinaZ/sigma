@@ -11,6 +11,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { PermissionsModule } from './modules/permissions/permissions.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { SprintsModule } from './modules/sprints/sprints.module';
@@ -22,6 +23,8 @@ import { ClientsModule } from './modules/clients/clients.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { OrganizationModulesModule } from './modules/organization-modules/organization-modules.module';
 import { DispatchesModule } from './modules/dispatches/dispatches.module';
+import { ApiKeysModule } from './modules/api-keys/api-keys.module';
+import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
 
 @Module({
@@ -46,6 +49,7 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware';
         HealthModule,
         UsersModule,
         RolesModule,
+        PermissionsModule,
         ProjectsModule,
         TasksModule,
         SprintsModule,
@@ -56,7 +60,10 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware';
         ClientsModule,
         SuppliersModule,
         OrganizationModulesModule,
+        OrganizationModulesModule,
         DispatchesModule,
+        ApiKeysModule,
+        WebhooksModule,
     ],
     controllers: [AppController],
     providers: [AppService, PrismaService],

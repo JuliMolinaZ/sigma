@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { hasFinancialAccess } from '../constants/roles.constants';
 
 /**
  * Financial Security Extension for Prisma
@@ -14,15 +15,6 @@ const FINANCIAL_MODELS = [
     'JournalLine',
     'Invoice',
     // Add future financial models here
-];
-
-const FINANCIAL_ROLES = [
-    'Superadmin',
-    'CEO',
-    'Owner',
-    'CFO',
-    'Contador Senior',
-    'Contador',
 ];
 
 export const prismaFinancialExtension = (prisma: PrismaClient, getCurrentUser?: () => any) => {
@@ -45,10 +37,11 @@ export const prismaFinancialExtension = (prisma: PrismaClient, getCurrentUser?: 
                     }
 
                     // Check if user has financial access
-                    const hasFinancialAccess = FINANCIAL_ROLES.includes(user.role);
+                    const userRole = typeof user.role === 'object' ? user.role.name : user.role;
+                    const hasAccess = hasFinancialAccess(userRole);
 
-                    if (!hasFinancialAccess) {
-                        throw new Error(`Access Denied: Financial data access restricted for role '${user.role}'`);
+                    if (!hasAccess) {
+                        throw new Error(`Access Denied: Financial data access restricted for role '${userRole}'`);
                     }
 
                     // User has access, proceed with query

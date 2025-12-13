@@ -5,6 +5,7 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { QueryProjectDto } from './dto/query-project.dto';
 import { ChangeProjectStatusDto } from './dto/change-status.dto';
 import { ProjectStatus } from '@prisma/client';
+import { EXECUTIVE_ROLES } from '../../common/constants/roles.constants';
 
 @Injectable()
 export class ProjectsService {
@@ -14,7 +15,7 @@ export class ProjectsService {
         const { id: userId, organizationId, role } = user;
 
         // RBAC: Only Executives can create projects
-        const canCreate = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'CEO', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const canCreate = EXECUTIVE_ROLES.includes(role?.toUpperCase());
         if (!canCreate) {
             throw new ForbiddenException('Only Executives can create new projects');
         }
@@ -25,10 +26,10 @@ export class ProjectsService {
         const dtoOwnerId = createProjectDto.ownerId;
         const dtoStartDate = createProjectDto.startDate;
         const dtoEndDate = createProjectDto.endDate;
-        
+
         // Exclude fields that are handled separately (relations)
         const { memberIds: _, ownerIds: __, ownerId: ___, startDate: ____, endDate: _____, ...projectData } = createProjectDto;
-        
+
         const ownerIds = dtoOwnerIds || (dtoOwnerId ? [dtoOwnerId] : [userId]);
 
         // Verify owners belong to organization
@@ -100,7 +101,7 @@ export class ProjectsService {
 
         // RBAC: If not Admin/Super Admin, restrict to assigned projects
         // Project Managers should only see their own projects
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'SUPERADMINISTRATOR', 'ADMINISTRATOR', 'CEO', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(role?.toUpperCase());
         if (!isAdmin) {
             where.OR = [
                 { ownerId: userId }, // Primary Project Owner
@@ -287,7 +288,7 @@ export class ProjectsService {
         }
 
         // RBAC Check
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'SUPERADMINISTRATOR', 'ADMINISTRATOR', 'CEO', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(role?.toUpperCase());
         if (!isAdmin) {
             // Check if owner (primary or co-owner)
             const isOwner = project.ownerId === userId || project.owners.some(o => o.id === userId);
@@ -317,7 +318,7 @@ export class ProjectsService {
         const { organizationId, role } = user;
 
         // RBAC: Only Executives can edit projects (Name, Description, Dates, Owner, etc.)
-        const isExecutive = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'CEO', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const isExecutive = EXECUTIVE_ROLES.includes(role?.toUpperCase());
         if (!isExecutive) {
             throw new ForbiddenException('Only Executives can edit projects');
         }
@@ -487,7 +488,7 @@ export class ProjectsService {
         const { organizationId, role } = user;
 
         // RBAC: Check if user is Admin/Executive
-        const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN', 'ADMINISTRATOR', 'CEO', 'CFO', 'CONTADOR SENIOR', 'GERENTE OPERACIONES'].includes(role?.toUpperCase());
+        const isAdmin = EXECUTIVE_ROLES.includes(role?.toUpperCase());
 
         try {
             // Ensure project exists first

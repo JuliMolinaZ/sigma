@@ -5,7 +5,8 @@ export interface User {
     lastName: string
     role: string | { id: string; name: string;[key: string]: any }
     organizationId: string
-    avatarUrl?: string
+    avatarUrl?: string | null
+    isActive?: boolean
     createdAt?: string
     updatedAt?: string
 }

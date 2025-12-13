@@ -1,4 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { hasFinancialAccess } from '../constants/roles.constants';
 
 /**
  * Financial Guard
@@ -7,16 +8,6 @@ import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@
  * This guard ensures only authorized roles can access financial controllers.
  * Apply this to ALL financial controllers with @UseGuards(FinancialGuard)
  */
-
-const FINANCIAL_ROLES = [
-    'Admin', // Added for migrated users
-    'Superadmin',
-    'CEO',
-    'Owner',
-    'CFO',
-    'Contador Senior',
-    'Contador',
-];
 
 @Injectable()
 export class FinancialGuard implements CanActivate {
@@ -29,11 +20,11 @@ export class FinancialGuard implements CanActivate {
         }
 
         const userRole = typeof user.role === 'object' ? user.role.name : user.role;
-        const hasFinancialAccess = FINANCIAL_ROLES.includes(userRole);
+        const hasAccess = hasFinancialAccess(userRole);
 
-        if (!hasFinancialAccess) {
+        if (!hasAccess) {
             throw new ForbiddenException(
-                `Access Denied: Financial module access is restricted. Your role '${user.role}' does not have financial permissions.`
+                `Access Denied: Financial module access is restricted. Your role '${userRole}' does not have financial permissions.`
             );
         }
 

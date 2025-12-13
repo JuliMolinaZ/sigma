@@ -64,21 +64,21 @@ export function DashboardCharts({ revenueData, recentActivity }: DashboardCharts
     };
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4 border-t-4 border-t-green-500">
-                <CardHeader>
-                    <div className="flex items-center justify-between">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-7">
+            <Card className="lg:col-span-4 border-t-4 border-t-green-500">
+                <CardHeader className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                         <div>
-                            <CardTitle className="flex items-center gap-2">
-                                <TrendingUp className="w-5 h-5 text-green-600" />
+                            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                                 {t('charts.revenueOverview.title')}
                             </CardTitle>
-                            <CardDescription className="mt-1">
+                            <CardDescription className="mt-1 text-xs sm:text-sm">
                                 {t('charts.revenueOverview.subtitle', { count: chartData.length })}
                             </CardDescription>
                         </div>
-                        <div className="text-right">
-                            <p className="text-2xl font-bold text-green-600">
+                        <div className="text-left sm:text-right">
+                            <p className="text-xl sm:text-2xl font-bold text-green-600">
                                 ${lastMonth.toLocaleString('es-MX')}
                             </p>
                             <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -90,8 +90,8 @@ export function DashboardCharts({ revenueData, recentActivity }: DashboardCharts
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="pl-2">
-                    <ResponsiveContainer width="100%" height={320}>
+                <CardContent className="pl-2 pr-2 sm:pl-2 sm:pr-6 pb-4 sm:pb-6">
+                    <ResponsiveContainer width="100%" height={280} className="sm:h-[320px]">
                         <BarChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                             <XAxis
@@ -134,16 +134,16 @@ export function DashboardCharts({ revenueData, recentActivity }: DashboardCharts
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
-            <Card className="col-span-3 border-t-4 border-t-blue-500">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Activity className="w-5 h-5 text-blue-600" />
+            <Card className="lg:col-span-3 border-t-4 border-t-blue-500">
+                <CardHeader className="p-4 sm:p-6">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                        <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                         {t('charts.recentActivity.title')}
                     </CardTitle>
-                    <CardDescription>{t('charts.recentActivity.subtitle')}</CardDescription>
+                    <CardDescription className="text-xs sm:text-sm">{t('charts.recentActivity.subtitle')}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
+                <CardContent className="p-4 sm:p-6 pt-0">
+                    <div className="space-y-2 sm:space-y-3 max-h-[300px] sm:max-h-[400px] overflow-y-auto pr-2">
                         {recentActivity && recentActivity.length > 0 ? (
                             recentActivity.slice(0, 6).map((activity) => (
                                 <div key={activity.id} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors border border-border/50">
