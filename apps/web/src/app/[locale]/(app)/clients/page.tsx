@@ -39,7 +39,7 @@ export default function ClientsPage() {
     const meta = response?.meta
     const createClient = useCreateClient()
 
-    const handleCreate = async (data: any) => {
+    const handleCreate = async (data: { nombre: string; rfc?: string; direccion?: string; telefono?: string; email?: string }) => {
         try {
             await createClient.mutateAsync(data)
             toast.success(t('createDialog.success'))

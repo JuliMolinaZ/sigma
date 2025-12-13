@@ -19,9 +19,10 @@ export default function AuditPage() {
             try {
                 const response = await api.get<{ success: boolean, data: AuditLog[] }>('/audit')
                 setLogs(response.data.data || [])
-            } catch (error: any) {
+            } catch (error) {
                 // Only log errors that aren't 404 (endpoint not implemented yet)
-                if (error?.response?.status !== 404) {
+                const status = (error as { response?: { status?: number } })?.response?.status
+                if (status !== 404) {
                     console.error('Failed to fetch audit logs:', error)
                 }
             } finally {

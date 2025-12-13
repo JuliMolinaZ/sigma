@@ -24,21 +24,26 @@ export default function ModulesManagementPage() {
     // Check if user is Super Admin
     const isSuperAdmin = useMemo(() => {
         if (!user) return false
-        const roleName = typeof user.role === 'object' ? (user.role as any).name : user.role
+        const roleName = typeof user.role === 'object' 
+            ? (user.role as { name?: string }).name 
+            : user.role
         return roleName?.includes('Super') || roleName === 'Superadmin'
     }, [user])
 
     // Initialize selected modules from API data
-    useEffect(() => {
-        if (modulesStatus) {
-            const statusMap: Record<string, boolean> = {}
-            modulesStatus.forEach((module) => {
-                statusMap[module.moduleId] = module.isEnabled
-            })
-            setSelectedModules(statusMap)
-            setHasChanges(false)
-        }
+    const initialModules = useMemo(() => {
+        if (!modulesStatus) return {}
+        const statusMap: Record<string, boolean> = {}
+        modulesStatus.forEach((module) => {
+            statusMap[module.moduleId] = module.isEnabled
+        })
+        return statusMap
     }, [modulesStatus])
+
+    useEffect(() => {
+        setSelectedModules(initialModules)
+        setHasChanges(false)
+    }, [initialModules])
 
     // Handle module toggle
     const toggleModule = (moduleId: string) => {
@@ -64,8 +69,11 @@ export default function ModulesManagementPage() {
             toast.success(t('updateSuccess', { defaultValue: 'Módulos actualizados correctamente' }))
             setHasChanges(false)
             refetch()
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || t('updateError', { defaultValue: 'Error al actualizar módulos' }))
+        } catch (error) {
+            const errorMessage = error instanceof Error 
+                ? error.message 
+                : (error as { response?: { data?: { message?: string } } })?.response?.data?.message
+            toast.error(errorMessage || t('updateError', { defaultValue: 'Error al actualizar módulos' }))
         }
     }
 
@@ -77,8 +85,11 @@ export default function ModulesManagementPage() {
             await initializeMutation.mutateAsync(allModuleIds)
             toast.success(t('initializeSuccess', { defaultValue: 'Módulos inicializados correctamente' }))
             refetch()
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || t('initializeError', { defaultValue: 'Error al inicializar módulos' }))
+        } catch (error) {
+            const errorMessage = error instanceof Error 
+                ? error.message 
+                : (error as { response?: { data?: { message?: string } } })?.response?.data?.message
+            toast.error(errorMessage || t('initializeError', { defaultValue: 'Error al inicializar módulos' }))
         }
     }
 

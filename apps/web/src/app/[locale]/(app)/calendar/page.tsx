@@ -33,7 +33,7 @@ export default function CalendarPage() {
     const { user } = useAuthStore()
     const [currentDate, setCurrentDate] = useState(new Date())
     const [tasks, setTasks] = useState<Task[]>([])
-    const [dispatches, setDispatches] = useState<any[]>([])
+    const [dispatches, setDispatches] = useState<Array<{ id: string; dueDate?: string; status: string; [key: string]: unknown }>>([])
     const [loading, setLoading] = useState(true)
     const t = useTranslations('calendar')
 
@@ -73,7 +73,7 @@ export default function CalendarPage() {
                 }
 
                 setTasks(extractList(tasksRes) as Task[])
-                setDispatches(extractList(dispatchesRes) as any[])
+                setDispatches(extractList(dispatchesRes) as Array<{ id: string; dueDate?: string; status: string; [key: string]: unknown }>)
 
             } catch (error) {
                 console.error('Failed to fetch data:', error)
@@ -100,8 +100,8 @@ export default function CalendarPage() {
                     type: 'task' as const,
                     taskId: task.id,
                     priority: task.priority,
-                    fromDispatch: !!(task as any).sourceDispatchId,
-                    dispatchId: (task as any).sourceDispatchId,
+                    fromDispatch: !!(task as Task & { sourceDispatchId?: string }).sourceDispatchId,
+                    dispatchId: (task as Task & { sourceDispatchId?: string }).sourceDispatchId,
                 }
             })
 
