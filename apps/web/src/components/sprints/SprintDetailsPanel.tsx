@@ -164,7 +164,7 @@ export function SprintDetailsPanel({ sprintId, onClose }: SprintDetailsPanelProp
                                 {sprint.members.map((member) => (
                                     <div key={member.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                         <Avatar className="h-8 w-8">
-                                            <AvatarImage src={member.avatarUrl} alt={`${member.firstName} ${member.lastName}`} />
+                                            <AvatarImage src={member.avatarUrl || undefined} alt={`${member.firstName} ${member.lastName}`} />
                                             <AvatarFallback className="text-xs">
                                                 {member.firstName?.[0]}{member.lastName?.[0]}
                                             </AvatarFallback>

@@ -45,8 +45,8 @@ import { RolePermissionsDialog } from '@/components/roles/RolePermissionsDialog'
 const roleSchema = z.object({
     name: z.string().min(1, 'El nombre es requerido'),
     description: z.string().optional(),
-    isSystem: z.boolean().default(false),
-    level: z.number().min(1).max(100).default(1),
+    isSystem: z.boolean(),
+    level: z.number().min(1).max(100),
     category: z.string().optional(),
 })
 

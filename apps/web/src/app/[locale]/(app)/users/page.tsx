@@ -88,8 +88,8 @@ export default function UsersPage() {
     // Check permissions - allow if user has users:create, users:update, or users:delete permissions
     // For now, using email check as fallback
     const canManageUsers = currentUser?.email === 'j.molina@runsolutions-services.com' || 
-                          (currentUser?.role && typeof currentUser.role === 'object' && 
-                           ['Superadmin', 'Admin', 'CEO', 'CFO', 'CTO', 'COO'].includes(currentUser.role.name))
+                          (currentUser?.role && typeof currentUser.role === 'object' && 'name' in currentUser.role &&
+                           ['Superadmin', 'Admin', 'CEO', 'CFO', 'CTO', 'COO'].includes((currentUser.role as { name: string }).name))
 
     const handleCreate = () => {
         setSelectedUser(null)

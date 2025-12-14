@@ -9,7 +9,7 @@
 set -e
 
 # Configuración
-SERVER="${1:-root@64.23.225.99}"
+SERVER="${1:-${DEPLOY_SERVER:-root@example.com}}"
 REMOTE_DIR="${REMOTE_DIR:-/root/sigma}"
 BACKUP_DIR="${BACKUP_DIR:-/root/sigma/backups}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)

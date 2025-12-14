@@ -1,11 +1,12 @@
 #!/bin/bash
 
 # Script para subir archivos al servidor de producción
-# Servidor: root@64.23.225.99
+# Configura el servidor usando la variable de entorno DEPLOY_SERVER
+# Ejemplo: DEPLOY_SERVER=root@example.com ./scripts/upload-to-server.sh
 
 set -e
 
-SERVER="root@64.23.225.99"
+SERVER="${DEPLOY_SERVER:-root@example.com}"
 REMOTE_DIR="/root/sigma"
 LOCAL_DIR="."
 

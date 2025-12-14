@@ -147,7 +147,7 @@ export default function ProjectsPage() {
                                                 {project.client ? (
                                                     <div className="flex items-center gap-2 lg:gap-3">
                                                         <Avatar className="h-7 w-7 lg:h-8 lg:w-8 border border-gray-100 dark:border-gray-700">
-                                                            <AvatarImage src={project.client.avatarUrl} />
+                                                            <AvatarImage src={project.client.avatarUrl || undefined} />
                                                             <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
                                                                 {project.client.nombre.charAt(0)}
                                                             </AvatarFallback>
@@ -235,7 +235,7 @@ export default function ProjectsPage() {
                                         {project.client && (
                                             <div className="flex items-center gap-2">
                                                 <Avatar className="h-8 w-8 border border-gray-100 dark:border-gray-700">
-                                                    <AvatarImage src={project.client.avatarUrl} />
+                                                    <AvatarImage src={project.client.avatarUrl || undefined} />
                                                     <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
                                                         {project.client.nombre.charAt(0)}
                                                     </AvatarFallback>

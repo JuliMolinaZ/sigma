@@ -9,7 +9,7 @@
 set -e
 
 # Configuración
-SSH_HOST="root@64.23.225.99"
+SSH_HOST="${DEPLOY_SERVER:-root@example.com}"
 LOCAL_PORT=5433
 REMOTE_PORT=5432
 TUNNEL_PID_FILE="/tmp/sigma-ssh-tunnel.pid"

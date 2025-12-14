@@ -106,7 +106,7 @@ export default function SprintDetailPage({ params }: SprintDetailPageProps) {
                             {sprint.members.map((member) => (
                                 <div key={member.id} className="flex items-center gap-2 p-2 pr-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                     <Avatar className="h-8 w-8">
-                                        <AvatarImage src={member.avatarUrl} alt={`${member.firstName} ${member.lastName}`} />
+                                        <AvatarImage src={member.avatarUrl || undefined} alt={`${member.firstName} ${member.lastName}`} />
                                         <AvatarFallback className="text-xs">
                                             {member.firstName?.[0]}{member.lastName?.[0]}
                                         </AvatarFallback>

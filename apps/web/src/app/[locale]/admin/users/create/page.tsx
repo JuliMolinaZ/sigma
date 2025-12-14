@@ -152,7 +152,7 @@ export default function CreateUserPage() {
                                         <SelectValue placeholder="Seleccionar rol" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {roles.map((role) => (
+                                        {roles.map((role: { id: string; name: string }) => (
                                             <SelectItem key={role.id} value={role.id}>
                                                 {role.name}
                                             </SelectItem>

@@ -399,7 +399,7 @@ export function TaskForm({
                                     <SelectItem key={u.id} value={u.id}>
                                         <div className="flex items-center gap-2">
                                             <Avatar className="h-6 w-6">
-                                                <AvatarImage src={u.avatarUrl} />
+                                                <AvatarImage src={u.avatarUrl || undefined} />
                                                 <AvatarFallback>
                                                     {u.firstName[0]}{u.lastName[0]}
                                                 </AvatarFallback>
@@ -416,7 +416,7 @@ export function TaskForm({
                 {selectedAssignee && (
                     <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border">
                         <Avatar className="h-8 w-8">
-                            <AvatarImage src={selectedAssignee.avatarUrl} />
+                            <AvatarImage src={selectedAssignee.avatarUrl || undefined} />
                             <AvatarFallback>
                                 {selectedAssignee.firstName[0]}
                                 {selectedAssignee.lastName[0]}

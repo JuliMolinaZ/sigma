@@ -6,6 +6,7 @@ import Button from '@/components/ui/button'
 import { ChevronLeft, ChevronRight, Plus, CheckSquare, Radio } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Task } from '@/types'
+import { Dispatch } from '@/hooks/useDispatches'
 import api from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { format, parseISO, isSameDay, startOfMonth, getDaysInMonth } from 'date-fns'
@@ -33,7 +34,7 @@ export default function CalendarPage() {
     const { user } = useAuthStore()
     const [currentDate, setCurrentDate] = useState(new Date())
     const [tasks, setTasks] = useState<Task[]>([])
-    const [dispatches, setDispatches] = useState<Array<{ id: string; dueDate?: string; status: string; [key: string]: unknown }>>([])
+    const [dispatches, setDispatches] = useState<Dispatch[]>([])
     const [loading, setLoading] = useState(true)
     const t = useTranslations('calendar')
 
@@ -73,7 +74,7 @@ export default function CalendarPage() {
                 }
 
                 setTasks(extractList(tasksRes) as Task[])
-                setDispatches(extractList(dispatchesRes) as Array<{ id: string; dueDate?: string; status: string; [key: string]: unknown }>)
+                setDispatches(extractList(dispatchesRes) as Dispatch[])
 
             } catch (error) {
                 console.error('Failed to fetch data:', error)
@@ -106,7 +107,9 @@ export default function CalendarPage() {
             })
 
         const dispatchEvents: CalendarEvent[] = dispatches
-            .filter(d => d.dueDate && d.status !== 'RESOLVED' && d.status !== 'CANCELED')
+            .filter((d): d is Dispatch & { dueDate: string } => 
+                d.dueDate != null && d.status !== 'RESOLVED'
+            )
             .map(d => {
                 const dueDate = parseISO(d.dueDate)
                 // Determine color based on the "other" person
@@ -117,13 +120,13 @@ export default function CalendarPage() {
 
                 return {
                     id: d.id,
-                    title: d.content, // Use content as title
+                    title: d.content || '', // Use content as title, ensure string
                     time: format(dueDate, 'HH:mm'),
                     date: format(dueDate, 'yyyy-MM-dd'),
                     color: color,
                     type: 'event' as const, // Treat as generic event or dispatch
                     dispatchId: d.id,
-                    priority: d.urgencyLevel
+                    priority: d.urgencyLevel || 'NORMAL' // Ensure string, default to NORMAL
                 }
             })
 

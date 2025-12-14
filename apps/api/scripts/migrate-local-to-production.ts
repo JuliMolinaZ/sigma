@@ -12,7 +12,7 @@
  * USO:
  *   1. Configurar variables de entorno:
  *      export LOCAL_DATABASE_URL="postgresql://sigma:sigma_password@localhost:5432/sigma_db"
- *      export PROD_DATABASE_URL="postgresql://sigma:password@64.23.225.99:5432/sigma_db"
+ *      export PROD_DATABASE_URL="postgresql://sigma:password@YOUR_SERVER_IP:5432/sigma_db"
  * 
  *   2. Modo simulación (dry-run):
  *      ts-node apps/api/scripts/migrate-local-to-production.ts --dry-run
@@ -36,7 +36,10 @@ import * as path from 'path';
 // Configuración - Leer desde .env del root o apps/api
 const LOCAL_DB_URL = process.env.LOCAL_DATABASE_URL || 'postgresql://sigma:sigma_password@localhost:5432/sigma_db';
 // Para producción, usar la variable del .env del root
-const PROD_DB_URL = process.env.PROD_DATABASE_URL || process.env.DATABASE_URL || 'postgresql://sigma:p4kT9e9QyuUFk4p1qgz1Nvy9GNR5shp@64.23.225.99:5432/sigma_db';
+const PROD_DB_URL = process.env.PROD_DATABASE_URL || process.env.DATABASE_URL || '';
+if (!PROD_DB_URL) {
+  throw new Error('PROD_DATABASE_URL o DATABASE_URL debe estar configurado');
+}
 
 // Tablas a excluir
 const EXCLUDED_TABLES = [

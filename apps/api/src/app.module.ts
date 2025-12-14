@@ -60,7 +60,6 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware';
         ClientsModule,
         SuppliersModule,
         OrganizationModulesModule,
-        OrganizationModulesModule,
         DispatchesModule,
         ApiKeysModule,
         WebhooksModule,

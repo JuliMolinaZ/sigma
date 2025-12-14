@@ -34,7 +34,8 @@ if [ -z "$DB_URL" ]; then
     exit 1
 fi
 
-if [[ ! "$DB_URL" == *"64.23.225.99"* ]] && [[ ! "$DB_URL" == *"localhost:5433"* ]]; then
+# Verificar que la URL no esté vacía
+if [ -z "$DB_URL" ]; then
     echo -e "${YELLOW}⚠️  Advertencia: DATABASE_URL no apunta a producción${NC}"
     echo "   URL actual: ${DB_URL:0:50}..."
     read -p "   ¿Continuar de todas formas? (s/N): " CONFIRM

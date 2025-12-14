@@ -75,7 +75,7 @@ export function TaskTable({ tasks, onTaskClick, onDelete }: TaskTableProps) {
                                         {task.assignee ? (
                                             <>
                                                 <Avatar className="h-6 w-6">
-                                                    <AvatarImage src={task.assignee.avatarUrl} />
+                                                    <AvatarImage src={task.assignee.avatarUrl || undefined} />
                                                     <AvatarFallback className="text-[10px]">
                                                         {task.assignee.firstName[0]}{task.assignee.lastName[0]}
                                                     </AvatarFallback>

@@ -11,7 +11,7 @@
 set -e
 
 # Configuración
-SERVER="root@64.23.225.99"
+SERVER="${DEPLOY_SERVER:-root@example.com}"
 REMOTE_DIR="/root/sigma"
 LOCAL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 

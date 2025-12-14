@@ -214,7 +214,7 @@ export function TaskDetailsPanel({ task, onClose, onEdit, onDelete, onStatusChan
                                             {task.assignee ? (
                                                 <>
                                                     <Avatar className="h-5 w-5">
-                                                        <AvatarImage src={task.assignee.avatarUrl} />
+                                                        <AvatarImage src={task.assignee.avatarUrl || undefined} />
                                                         <AvatarFallback className="text-[10px]">
                                                             {task.assignee.firstName?.[0]}{task.assignee.lastName?.[0]}
                                                         </AvatarFallback>
@@ -241,7 +241,7 @@ export function TaskDetailsPanel({ task, onClose, onEdit, onDelete, onStatusChan
                                             {task.reporter ? (
                                                 <>
                                                     <Avatar className="h-5 w-5">
-                                                        <AvatarImage src={task.reporter.avatarUrl} />
+                                                        <AvatarImage src={task.reporter.avatarUrl || undefined} />
                                                         <AvatarFallback className="text-[10px]">
                                                             {task.reporter.firstName?.[0]}{task.reporter.lastName?.[0]}
                                                         </AvatarFallback>
@@ -308,7 +308,7 @@ export function TaskDetailsPanel({ task, onClose, onEdit, onDelete, onStatusChan
                                 comments.map((comment) => (
                                     <div key={comment.id} className="flex gap-3">
                                         <Avatar className="h-8 w-8 mt-1">
-                                            <AvatarImage src={comment.user.avatarUrl} />
+                                            <AvatarImage src={comment.user.avatarUrl || undefined} />
                                             <AvatarFallback>{comment.user.firstName[0]}</AvatarFallback>
                                         </Avatar>
                                         <div className="flex-1 bg-gray-50 dark:bg-gray-900 rounded-lg p-3 text-sm">

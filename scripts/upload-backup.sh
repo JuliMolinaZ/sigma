@@ -4,7 +4,7 @@
 
 set -e
 
-SERVER="root@64.23.225.99"
+SERVER="${DEPLOY_SERVER:-root@example.com}"
 REMOTE_DIR="/root/sigma/backups"
 
 # Si no se especifica archivo, buscar el más reciente (sigma_backup_* o sigma_production_export_*)

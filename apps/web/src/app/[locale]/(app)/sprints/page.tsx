@@ -161,7 +161,7 @@ export default function SprintsPage() {
                                                     <div className="flex -space-x-2">
                                                         {sprint.members.slice(0, 3).map((member) => (
                                                             <Avatar key={member.id} className="h-7 w-7 border-2 border-white dark:border-gray-800">
-                                                                <AvatarImage src={member.avatarUrl} alt={`${member.firstName} ${member.lastName}`} />
+                                                                <AvatarImage src={member.avatarUrl || undefined} alt={`${member.firstName} ${member.lastName}`} />
                                                                 <AvatarFallback className="text-xs">
                                                                     {member.firstName?.[0]}{member.lastName?.[0]}
                                                                 </AvatarFallback>

@@ -38,13 +38,15 @@ async function verifyConnection() {
     console.log(`   Proyectos: ${projectCount}`);
     console.log(`   Clientes: ${clientCount}\n`);
 
-    // Verificar que DATABASE_URL apunta a producción
+    // Verificar que DATABASE_URL está configurado
     const dbUrl = process.env.DATABASE_URL || '';
-    if (dbUrl.includes('64.23.225.99')) {
-      console.log('⚠️  ADVERTENCIA: Estás conectado a PRODUCCIÓN');
-      console.log('   Ten cuidado con las operaciones que realices\n');
+    if (!dbUrl) {
+      console.log('⚠️  ADVERTENCIA: DATABASE_URL no está configurado\n');
     } else if (dbUrl.includes('localhost:5433')) {
-      console.log('🔒 Conexión segura vía túnel SSH\n');
+      console.log('🔒 Conexión segura vía túnel SSH detectada\n');
+    } else if (!dbUrl.includes('localhost:5432')) {
+      console.log('⚠️  ADVERTENCIA: Estás conectado a un servidor remoto');
+      console.log('   Ten cuidado con las operaciones que realices\n');
     } else {
       console.log('ℹ️  Conexión local detectada\n');
     }

@@ -65,7 +65,7 @@ export function TaskCard({ task, onClick, onDragStart, onDragEnd, isDragging, cl
                     <div className="flex items-center gap-2">
                         {task.assignee ? (
                             <Avatar className="h-5 w-5">
-                                <AvatarImage src={task.assignee.avatarUrl} />
+                                <AvatarImage src={task.assignee.avatarUrl || undefined} />
                                 <AvatarFallback className="text-[9px]">
                                     {task.assignee.firstName[0]}{task.assignee.lastName[0]}
                                 </AvatarFallback>

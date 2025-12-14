@@ -68,3 +68,12 @@ deploy: build up migrate ## Desplegar completo (build + up + migrate)
 	@echo "Verifica el estado con: make ps"
 	@echo "Ver logs con: make logs"
 
+build-push: ## Build y push de imágenes a registry (uso: make build-push REGISTRY=docker.io/usuario)
+	@./scripts/build-and-push-images.sh $(REGISTRY) $(VERSION)
+
+deploy-registry: ## Desplegar desde registry (uso: make deploy-registry REGISTRY=docker.io/usuario VERSION=v3.0.3)
+	@./scripts/deploy-from-registry.sh $(REGISTRY) $(VERSION)
+
+build-send-ssh: ## Build local y envío por SSH (uso: make build-send-ssh SERVER=root@143.110.229.234)
+	@./scripts/build-and-send-via-ssh.sh $(SERVER)
+

@@ -77,6 +77,7 @@ export class WebhooksService {
         });
 
         // Fire and forget (don't block the main flow)
-        Promise.allSettled(promises);
+        // Using void to explicitly indicate intentional unhandled promise
+        void Promise.allSettled(promises);
     }
 }

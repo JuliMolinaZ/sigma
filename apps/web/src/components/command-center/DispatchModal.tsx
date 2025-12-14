@@ -49,7 +49,9 @@ export function DispatchModal({ open, onOpenChange }: DispatchModalProps) {
     // Get users array from different possible response structures
     const allUsers = Array.isArray(usersData)
         ? usersData
-        : usersData?.data || [];
+        : (usersData && typeof usersData === 'object' && 'data' in usersData && Array.isArray((usersData as { data: unknown }).data))
+            ? (usersData as { data: UserWithRole[] }).data
+            : [];
 
     // Filter for C-Suite executives only - matching backend guard
     const executives = allUsers.filter((user: UserWithRole) => {

@@ -1,11 +1,12 @@
 #!/bin/bash
 
 # Script completo de despliegue a producción
-# Servidor: root@64.23.225.99
+# Configura el servidor usando la variable de entorno DEPLOY_SERVER
+# Ejemplo: DEPLOY_SERVER=root@example.com ./scripts/deploy-to-production.sh
 
 set -e
 
-SERVER="root@64.23.225.99"
+SERVER="${DEPLOY_SERVER:-root@example.com}"
 REMOTE_DIR="/root/sigma"
 
 echo "🚀 SIGMA ERP - Despliegue Completo a Producción"
@@ -99,8 +100,8 @@ echo "   Variables requeridas:"
 echo "   - DATABASE_URL=postgresql://sigma:TU_PASSWORD@postgres:5432/sigma_db"
 echo "   - JWT_SECRET=(genera con: ./scripts/generate-secrets.sh)"
 echo "   - JWT_REFRESH_SECRET=(genera con: ./scripts/generate-secrets.sh)"
-echo "   - CORS_ORIGIN=http://64.23.225.99:3001"
-echo "   - NEXT_PUBLIC_API_URL=http://64.23.225.99:3000/api"
+echo "   - CORS_ORIGIN=http://YOUR_SERVER_IP:3001  # O https://YOUR_DOMAIN.com"
+echo "   - NEXT_PUBLIC_API_URL=http://YOUR_SERVER_IP:3000/api  # O https://YOUR_DOMAIN.com/api"
 echo ""
 echo "3. Despliega:"
 echo "   ./scripts/quick-deploy.sh"
@@ -121,8 +122,8 @@ echo "   docker-compose -f docker-compose.prod.yml ps"
 echo "   docker-compose -f docker-compose.prod.yml logs -f"
 echo ""
 echo "🌐 URLs cuando esté listo:"
-echo "   - API:  http://64.23.225.99:3000/api"
-echo "   - Web:  http://64.23.225.99:3001"
-echo "   - Docs: http://64.23.225.99:3000/api/docs"
+echo "   - API:  http://YOUR_SERVER_IP:3000/api"
+echo "   - Web:  http://YOUR_SERVER_IP:3001"
+echo "   - Docs: http://YOUR_SERVER_IP:3000/api/docs"
 echo ""
 

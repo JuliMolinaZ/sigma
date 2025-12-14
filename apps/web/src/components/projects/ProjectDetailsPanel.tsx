@@ -322,7 +322,7 @@ export function ProjectDetailsPanel({ projectId, onClose }: ProjectDetailsPanelP
                                                 {project.members.map((member: any) => (
                                                     <div key={member.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
                                                         <Avatar className="w-8 h-8">
-                                                            <AvatarImage src={member.avatarUrl} />
+                                                            <AvatarImage src={member.avatarUrl || undefined} />
                                                             <AvatarFallback>{member.firstName?.charAt(0)}</AvatarFallback>
                                                         </Avatar>
                                                         <div>

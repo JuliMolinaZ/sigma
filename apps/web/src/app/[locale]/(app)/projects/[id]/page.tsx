@@ -341,7 +341,7 @@ export default function ProjectDetailsPage() {
                                     project.owners.map((owner) => (
                                         <div key={owner.id} className="flex items-center gap-4">
                                             <Avatar className="h-10 w-10">
-                                                <AvatarImage src={owner.avatarUrl} />
+                                                <AvatarImage src={owner.avatarUrl || undefined} />
                                                 <AvatarFallback>{owner.firstName?.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <div>
@@ -353,7 +353,7 @@ export default function ProjectDetailsPage() {
                                 ) : (
                                     <div className="flex items-center gap-4">
                                         <Avatar className="h-10 w-10">
-                                            <AvatarImage src={project.owner?.avatarUrl} />
+                                            <AvatarImage src={project.owner?.avatarUrl || undefined} />
                                             <AvatarFallback>{project.owner?.firstName?.charAt(0)}</AvatarFallback>
                                         </Avatar>
                                         <div>

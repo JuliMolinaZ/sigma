@@ -54,14 +54,30 @@ export function QuickDispatchInput({
     // Default to self-assigned initially or keep empty?
     // Requirement: "Auto-assign to me with one click".
 
-    const allUsers = Array.isArray(usersData) ? usersData : usersData?.data || [];
+    interface UserWithRole {
+        id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        avatarUrl?: string | null;
+        role?: {
+            id?: string;
+            name?: string;
+        } | string;
+    }
+
+    const allUsers: UserWithRole[] = Array.isArray(usersData) 
+        ? usersData as UserWithRole[]
+        : (usersData && typeof usersData === 'object' && 'data' in usersData && Array.isArray((usersData as { data: unknown }).data))
+            ? (usersData as { data: UserWithRole[] }).data
+            : [];
 
     // Sort users by name
-    const sortedUsers = [...allUsers].sort((a: any, b: any) =>
+    const sortedUsers = [...allUsers].sort((a, b) =>
         (a.firstName || '').localeCompare(b.firstName || '')
     );
 
-    const selectedUser = allUsers.find((u: any) => u.id === recipientId);
+    const selectedUser = allUsers.find((u) => u.id === recipientId);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -219,7 +235,7 @@ export function QuickDispatchInput({
                                     {selectedUser ? (
                                         <>
                                             <Avatar className="h-5 w-5">
-                                                <AvatarImage src={selectedUser.avatarUrl} />
+                                                <AvatarImage src={selectedUser.avatarUrl || undefined} />
                                                 <AvatarFallback className="text-[10px]">{selectedUser.firstName[0]}</AvatarFallback>
                                             </Avatar>
                                             <span className="max-w-[100px] truncate">{selectedUser.firstName}</span>
@@ -267,7 +283,7 @@ export function QuickDispatchInput({
                                                     )}
                                                 >
                                                     <Avatar className="h-8 w-8 shrink-0">
-                                                        <AvatarImage src={user.avatarUrl} />
+                                                        <AvatarImage src={user.avatarUrl || undefined} />
                                                         <AvatarFallback>{user.firstName?.[0]}</AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex flex-col overflow-hidden flex-1">
