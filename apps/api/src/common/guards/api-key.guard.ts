@@ -10,13 +10,9 @@ export class ApiKeyGuard implements CanActivate {
         const apiKey = request.headers['x-api-key'];
 
         if (!apiKey) {
-            return true; // Pass through to other guards (like JWT) or let the controller decide if it's public
-            // Actually, if this guard is used, it usually EXPECTS an API key.
-            // But if we want to support BOTH JWT and API Key, we need a strategy.
-            // For now, let's assume this guard is explicitly for endpoints that require API Key, 
-            // OR we can make a Composite Guard.
-            // Let's make it strict: If used, it checks for API Key.
-            // return false; 
+            // Security: If this guard is used, API key is required
+            // Don't allow fallthrough to avoid confusion about authentication requirements
+            throw new UnauthorizedException('API Key required');
         }
 
         try {

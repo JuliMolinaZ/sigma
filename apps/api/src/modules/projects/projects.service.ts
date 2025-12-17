@@ -100,9 +100,15 @@ export class ProjectsService {
         };
 
         // RBAC: If not Admin/Super Admin, restrict to assigned projects
-        // Project Managers should only see their own projects
-        const isAdmin = EXECUTIVE_ROLES.includes(role?.toUpperCase());
-        if (!isAdmin) {
+        // Project Managers should see all projects in their organization
+        const roleName = typeof role === 'string' ? role : role?.name || '';
+        const normalizedRoleName = roleName ? roleName.toUpperCase().trim() : '';
+        const isAdmin = normalizedRoleName ? EXECUTIVE_ROLES.some(r => r.toUpperCase() === normalizedRoleName) : false;
+        const isProjectManager = normalizedRoleName === 'PROJECT MANAGER' || normalizedRoleName === 'PM';
+        
+        // Project Managers can see all projects in their organization
+        // Other non-admin users see only projects they are assigned to
+        if (!isAdmin && !isProjectManager) {
             where.OR = [
                 { ownerId: userId }, // Primary Project Owner
                 { owners: { some: { id: userId } } }, // Co-Owner

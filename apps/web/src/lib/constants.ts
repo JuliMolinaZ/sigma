@@ -117,7 +117,7 @@ export const MODULES: Module[] = [
         icon: Radio,
         description: 'Executive dispatch system',
         category: 'core',
-        requiredRole: ['Admin', 'Superadmin', 'CEO', 'CFO', 'CTO', 'COO', 'CCO', 'Gerente Operaciones'],
+        requiredRole: [], // Available to all users
     },
 
     // Finance Modules (Protected)

@@ -22,8 +22,30 @@ async function bootstrap() {
     app.setGlobalPrefix('api');
 
     // CORS
+    const allowedOrigins = [
+        'http://localhost:3001',
+        'http://127.0.0.1:3001',
+    ];
+    
+    // Add production origin if configured
+    if (process.env.CORS_ORIGIN) {
+        const origins = process.env.CORS_ORIGIN.split(',').map(o => o.trim());
+        allowedOrigins.push(...origins);
+    }
+    
     app.enableCors({
-        origin: ['http://localhost:3001', 'http://127.0.0.1:3001', process.env.CORS_ORIGIN || '*'],
+        origin: (origin, callback) => {
+            // Allow requests with no origin (mobile apps, Postman, etc.)
+            if (!origin) {
+                return callback(null, true);
+            }
+            
+            if (allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         credentials: true,
         exposedHeaders: ['Authorization', 'x-org-id'],
@@ -83,16 +105,20 @@ The \`X-Organization-Id\` header is required for all authenticated requests.
         .build();
 
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document, {
-        customSiteTitle: 'SIGMA ERP API Documentation',
-        customCss: '.swagger-ui .topbar { display: none }',
-        swaggerOptions: {
-            persistAuthorization: true,
-            docExpansion: 'none',
-            filter: true,
-            showRequestDuration: true,
-        },
-    });
+    
+    // Security: Only enable Swagger in development or if explicitly enabled
+    if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SWAGGER === 'true') {
+        SwaggerModule.setup('api/docs', app, document, {
+            customSiteTitle: 'SIGMA ERP API Documentation',
+            customCss: '.swagger-ui .topbar { display: none }',
+            swaggerOptions: {
+                persistAuthorization: true,
+                docExpansion: 'none',
+                filter: true,
+                showRequestDuration: true,
+            },
+        });
+    }
 
     const port = process.env.PORT || 3000;
     await app.listen(port);

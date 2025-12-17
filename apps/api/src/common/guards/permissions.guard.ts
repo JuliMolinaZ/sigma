@@ -23,8 +23,15 @@ export class PermissionsGuard implements CanActivate {
             throw new ForbiddenException('Authentication required');
         }
 
-        // Super Admin Bypass
-        if (user.email === 'j.molina@runsolutions-services.com') {
+        // Super Admin Bypass - Check if user has super admin role instead of hardcoded email
+        // TODO: Replace with proper role-based check (e.g., user.role.name === 'Super Admin')
+        // For now, keeping email check but should be moved to database role check
+        const superAdminEmails = process.env.SUPER_ADMIN_EMAILS?.split(',').map(e => e.trim()) || [];
+        if (superAdminEmails.includes(user.email)) {
+            // Log super admin access for audit purposes
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`[PermissionsGuard] Super admin bypass for: ${user.email}`);
+            }
             return true;
         }
 

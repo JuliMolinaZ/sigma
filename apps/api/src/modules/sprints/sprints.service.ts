@@ -135,9 +135,14 @@ export class SprintsService {
         };
 
         // RBAC: If not Admin, restrict to projects they have access to
-        const isAdmin = EXECUTIVE_ROLES.includes(role?.toUpperCase());
+        const roleName = typeof role === 'string' ? role : role?.name || '';
+        const normalizedRoleName = roleName ? roleName.toUpperCase().trim() : '';
+        const isAdmin = normalizedRoleName ? EXECUTIVE_ROLES.some(r => r.toUpperCase() === normalizedRoleName) : false;
+        const isProjectManager = normalizedRoleName === 'PROJECT MANAGER' || normalizedRoleName === 'PM';
 
-        if (!isAdmin) {
+        // Project Managers can see all sprints in their organization
+        // Other non-admin users see only sprints in projects they have access to
+        if (!isAdmin && !isProjectManager) {
             // Get projects user has access to
             const accessibleProjects = await this.prisma.project.findMany({
                 where: {

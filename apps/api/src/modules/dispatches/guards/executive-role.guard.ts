@@ -11,20 +11,8 @@ export class ExecutiveRoleGuard implements CanActivate {
             throw new ForbiddenException('User role not found');
         }
 
-        // Super Admin Bypass (same as PermissionsGuard)
-        if (user.email === 'j.molina@runsolutions-services.com') {
-            return true;
-        }
-
-        const roleName = typeof user.role === 'string' ? user.role : (user.role.name || user.role);
-        const isExecutive = isExecutiveRole(roleName);
-
-        if (!isExecutive) {
-            throw new ForbiddenException(
-                `Access denied. Command Center is restricted to C-Suite executives and Superadmins only. Your role: ${roleName}`
-            );
-        }
-
+        // Allow access to all authenticated users
+        // Command Center is now available to everyone
         return true;
     }
 }

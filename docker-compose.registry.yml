@@ -13,7 +13,7 @@ services:
     container_name: sigma-postgres
     restart: unless-stopped
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
     environment:
       POSTGRES_USER: ${DB_USER:-sigma}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -34,7 +34,7 @@ services:
     container_name: sigma-redis
     restart: unless-stopped
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     networks:

@@ -5,17 +5,25 @@ import { AuthGuard } from '@nestjs/passport';
 export class JwtAuthGuard extends AuthGuard('jwt') {
     canActivate(context: ExecutionContext) {
         const request = context.switchToHttp().getRequest();
-        const authHeader = request.headers['authorization'];
-        console.log(`[JwtAuthGuard] Authorization Header: ${authHeader}`);
+        // Security: Don't log authorization headers in production (contain tokens)
+        if (process.env.NODE_ENV === 'development') {
+            const authHeader = request.headers['authorization'];
+            console.log(`[JwtAuthGuard] Authorization Header: ${authHeader ? 'Present' : 'Missing'}`);
+            console.log('[JwtAuthGuard] canActivate called');
+        }
 
-        console.log('[JwtAuthGuard] canActivate called');
         const result = super.canActivate(context);
-        console.log('[JwtAuthGuard] canActivate result:', result);
+        if (process.env.NODE_ENV === 'development') {
+            console.log('[JwtAuthGuard] canActivate result:', result);
+        }
         return result;
     }
 
     handleRequest(err, user, info) {
-        console.log('[JwtAuthGuard] handleRequest - err:', err, 'user:', user, 'info:', info);
+        // Security: Don't log user info in production
+        if (process.env.NODE_ENV === 'development') {
+            console.log('[JwtAuthGuard] handleRequest - err:', err, 'user:', user ? 'present' : 'missing', 'info:', info);
+        }
         if (err || !user) {
             throw err || new UnauthorizedException('Unauthorized');
         }

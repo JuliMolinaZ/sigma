@@ -8,5 +8,7 @@ export const validationSchema = Joi.object({
     DATABASE_URL: Joi.string().required(),
     JWT_SECRET: Joi.string().required().min(32),
     JWT_REFRESH_SECRET: Joi.string().required().min(32),
-    CORS_ORIGIN: Joi.string().default('*'),
+    CORS_ORIGIN: Joi.string().optional(), // No default - must be explicitly set
+    SUPER_ADMIN_EMAILS: Joi.string().optional(),
+    ENABLE_SWAGGER: Joi.string().valid('true', 'false').default('false'),
 });

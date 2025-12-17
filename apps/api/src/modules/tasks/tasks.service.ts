@@ -174,30 +174,41 @@ export class TasksService {
         
         const normalizedRoleName = roleName ? roleName.toUpperCase().trim() : '';
         const isAdmin = normalizedRoleName ? EXECUTIVE_ROLES.some(r => r.toUpperCase() === normalizedRoleName) : false;
+        const isProjectManager = normalizedRoleName === 'PROJECT MANAGER' || normalizedRoleName === 'PM';
 
-        if (!isAdmin) {
-            // If not admin, check if user is a Project Owner (Product Owner) or just a Dev
-            // We need to know which projects the user owns to filter tasks accordingly if they are acting as PO
-            // OR if they are a Dev, they see assigned tasks.
+        // Project Managers can see all tasks in their organization
+        // Other non-admin users see only tasks they are assigned to or in projects they own/are members of
+        if (!isAdmin && !isProjectManager) {
+            // If not admin/PM, check if user is a Project Owner/Member or just a Dev
+            // We need to know which projects the user owns or is a member of to filter tasks accordingly
 
             // Strategy:
-            // 1. Get all projects owned by user.
-            // 2. If user owns the project requested in query (projectId), they see all tasks in it.
-            // 3. If no projectId requested, they see tasks where they are assignee OR tasks in projects they own.
+            // 1. Get all projects where user is owner, co-owner, or member.
+            // 2. If user owns/is member of the project requested in query (projectId), they see all tasks in it.
+            // 3. If no projectId requested, they see tasks where they are assignee OR tasks in projects they own/are member of.
 
-            const ownedProjects = await this.prisma.project.findMany({
-                where: { ownerId: userId, organizationId },
+            // Get projects where user is owner, co-owner, or member
+            const accessibleProjects = await this.prisma.project.findMany({
+                where: {
+                    organizationId,
+                    deletedAt: null,
+                    OR: [
+                        { ownerId: userId },
+                        { owners: { some: { id: userId } } },
+                        { members: { some: { id: userId } } },
+                    ]
+                },
                 select: { id: true }
             });
-            const ownedProjectIds = ownedProjects.map(p => p.id);
+            const accessibleProjectIds = accessibleProjects.map(p => p.id);
 
             if (projectId) {
                 // Specific project requested
-                if (ownedProjectIds.includes(projectId)) {
-                    // User is PO of this project, can see all
+                if (accessibleProjectIds.includes(projectId)) {
+                    // User is owner/member of this project, can see all tasks in the project
                     where.projectId = projectId;
                 } else {
-                    // User is NOT PO, so must be Dev -> only assigned tasks OR reported tasks
+                    // User is NOT owner/member, so only assigned tasks OR reported tasks
                     where.projectId = projectId;
                     where.OR = [
                         { assigneeId: userId },
@@ -206,21 +217,21 @@ export class TasksService {
                 }
             } else {
                 // No specific project, show:
-                // Tasks assigned to me OR Tasks I reported OR Tasks in projects I own
+                // Tasks assigned to me OR Tasks I reported OR Tasks in projects I own/am member of
                 const orConditions: any[] = [
                     { assigneeId: userId },
                     { reporterId: userId }
                 ];
                 
-                // Only add project filter if user owns projects
-                if (ownedProjectIds.length > 0) {
-                    orConditions.push({ projectId: { in: ownedProjectIds } });
+                // Add project filter if user has accessible projects
+                if (accessibleProjectIds.length > 0) {
+                    orConditions.push({ projectId: { in: accessibleProjectIds } });
                 }
                 
                 where.OR = orConditions;
             }
         } else {
-            // Admin sees all, apply filters if present
+            // Admin or Project Manager sees all tasks, apply filters if present
             if (projectId) where.projectId = projectId;
         }
 
